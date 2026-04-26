@@ -34,6 +34,7 @@ export default function QuotationDashboard({ quotation }: { quotation: any }) {
   const [statusFilter, setStatusFilter] = useState('all');
   const [loadingItems, setLoadingItems] = useState<Record<string, boolean>>({});
   const [batchLoading, setBatchLoading] = useState(false);
+  const [expandedHistoryId, setExpandedHistoryId] = useState<string | null>(null);
 
   const searchParams = useSearchParams();
   const categoryFilter = searchParams.get('category');
@@ -245,16 +246,24 @@ export default function QuotationDashboard({ quotation }: { quotation: any }) {
                       const isAgreed = item.status === 'agreed';
 
                       return (
+                        <React.Fragment key={item.id}>
                         <tr
-                          key={item.id}
                           className={`border-b border-[var(--border-subtle)] group transition-colors
                             ${isAgreed ? 'bg-[var(--grn-bg)] hover:bg-green-50/70' : 'hover:bg-[var(--surface2)]'}
                             ${isUnpriced ? 'border-l-2 border-l-[var(--ylw)]' : ''}`}
                         >
-                          {/* Name */}
+                          {/* Name — click to toggle history */}
                           <td className="py-2.5 px-3">
-                            <div className="font-semibold text-[var(--text)] leading-snug">{item.name}</div>
-                            {item.note && <div className="text-[10px] text-[var(--text3)] mt-0.5 truncate max-w-[180px]">{item.note}</div>}
+                            <button
+                              onClick={() => setExpandedHistoryId(expandedHistoryId === item.id ? null : item.id)}
+                              className="text-left w-full group/name"
+                            >
+                              <div className="font-semibold text-[var(--text)] leading-snug group-hover/name:text-[var(--acc)] transition-colors">
+                                {item.name}
+                                <span className="ml-1.5 text-[9px] font-normal text-[var(--text4)] group-hover/name:text-[var(--acc-ring)]">▾ lịch sử</span>
+                              </div>
+                              {item.note && <div className="text-[10px] text-[var(--text3)] mt-0.5 truncate max-w-[180px]">{item.note}</div>}
+                            </button>
                           </td>
 
                           {/* Brand */}
@@ -369,6 +378,34 @@ export default function QuotationDashboard({ quotation }: { quotation: any }) {
                             </div>
                           </td>
                         </tr>
+
+                        {/* History panel — expandable */}
+                        {expandedHistoryId === item.id && (
+                          <tr className="border-b border-[var(--border-subtle)] bg-[var(--surface2)]">
+                            <td colSpan={11} className="px-4 py-3">
+                              <p className="text-[10.5px] font-bold text-[var(--text3)] uppercase tracking-wide mb-2">Lịch sử thay đổi — {item.name}</p>
+                              {item.events && item.events.length > 0 ? (
+                                <div className="flex flex-col gap-1.5">
+                                  {item.events.map((ev: any) => (
+                                    <div key={ev.id} className="flex items-center gap-3 text-[12px]">
+                                      <span className="text-[var(--text4)] tabular-nums shrink-0 text-[11px]">
+                                        {new Date(ev.createdAt).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                                      </span>
+                                      <span className="text-[var(--text3)] font-semibold shrink-0">{ev.field}</span>
+                                      <span className="text-[var(--text4)]">
+                                        {ev.oldValue ? <><span className="line-through">{ev.oldValue}</span> → </> : ''}
+                                        <span className="text-[var(--text)] font-medium">{ev.newValue || '(trống)'}</span>
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <p className="text-[12px] text-[var(--text4)] italic">Chưa có thay đổi nào được ghi lại.</p>
+                              )}
+                            </td>
+                          </tr>
+                        )}
+                        </React.Fragment>
                       );
                     })}
                   </React.Fragment>

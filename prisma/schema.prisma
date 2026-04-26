@@ -59,4 +59,15 @@ model LineItem {
   
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
+  events       ItemEvent[]
+}
+
+model ItemEvent {
+  id        String   @id @default(uuid())
+  itemId    String
+  item      LineItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  field     String   // 'status', 'agreedPrice', 'note'
+  oldValue  String?
+  newValue  String?
+  createdAt DateTime @default(now())
 }
