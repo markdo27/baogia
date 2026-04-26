@@ -1,4 +1,3 @@
-
 var DATA=[
 {s:'I',name:'Điện - Nước - Mạng - ĐHKK',items:[
 {n:1,name:'Nhân công + vật tư phụ phần điện',dvt:'m2',sl:385,dg:639000,tt:246015000,ref:'250k-350k',note:'Nhân công hoàn thiện',ev:'high',brand:''},
@@ -72,92 +71,220 @@ var DATA=[
 ]}
 ];
 
-function fmt(n){if(!n)return '-';return n.toLocaleString('vi-VN')+'đ';}
-
-function evTag(ev){
-  if(ev==='high') return '<span class="tag high">⚠ Giá Cao</span>';
-  if(ev==='mid')  return '<span class="tag mid">🔍 Cần Check</span>';
-  return '<span class="tag ok">✓ OK</span>';
+// --- Parse References to min/max ---
+function parseRef(ref) {
+  if (!ref || ref === '-') return { min: 0, max: 0 };
+  let str = ref.toLowerCase().replace(/[\/\s]/g, '').replace(/m2/g, '').replace(/md/g, '').replace(/bộ/g, '');
+  let parts = str.split('-');
+  function p(s) {
+    let val = parseFloat(s.replace(/,/g, ''));
+    if (s.includes('k')) return val * 1000;
+    if (s.includes('tr')) return val * 1000000;
+    return val;
+  }
+  if (parts.length === 2) {
+    return { min: p(parts[0]), max: p(parts[1]) };
+  } else if (parts.length === 1) {
+    return { min: p(parts[0]), max: p(parts[0]) };
+  }
+  return { min: 0, max: 0 };
 }
 
-function shopeeUrl(name,brand){
-  return 'https://shopee.vn/search?keyword='+encodeURIComponent((brand?brand+' ':'')+name);
-}
-function googleUrl(name,brand){
-  return 'https://www.google.com/search?q='+encodeURIComponent((brand?brand+' ':'')+name+' giá');
-}
-
-var filter='all', search='';
-
-function render(){
-  var main=document.getElementById('main');
-  var empty=document.getElementById('empty');
-  var html=''; var total=0;
-  DATA.forEach(function(sec){
-    if(filter!=='all' && filter!==sec.s) return;
-    var items=sec.items.filter(function(it){
-      if(!search) return true;
-      var t=search.toLowerCase();
-      return it.name.toLowerCase().indexOf(t)>-1
-          ||(it.brand&&it.brand.toLowerCase().indexOf(t)>-1)
-          ||(it.note&&it.note.toLowerCase().indexOf(t)>-1);
-    });
-    if(!items.length) return;
-    total+=items.length;
-    var rows='';
-    items.forEach(function(it){
-      rows+='<tr>'
-        +'<td class="td-n">'+it.n+'</td>'
-        +'<td class="td-name"><strong>'+it.name+'</strong>'+(it.brand?'<br><span class="brand">'+it.brand+'</span>':'')+'</td>'
-        +'<td class="td-unit">'+it.dvt+'</td>'
-        +'<td class="td-qty">'+it.sl+'</td>'
-        +'<td class="td-price">'+fmt(it.dg)+'</td>'
-        +'<td class="td-ref">'+( it.ref||'-')+'</td>'
-        +'<td class="td-total">'+fmt(it.tt)+'</td>'
-        +'<td>'+evTag(it.ev)+'</td>'
-        +'<td class="td-note">'+it.note+'</td>'
-        +'<td class="td-act">'
-        +'<a class="buy-btn" href="'+shopeeUrl(it.name,it.brand)+'" target="_blank">🛒 Shopee</a> '
-        +'<a class="buy-btn gbtn" href="'+googleUrl(it.name,it.brand)+'" target="_blank">🔍 Google</a>'
-        +'</td>'
-        +'</tr>';
-    });
-    html+='<div class="section" data-s="'+sec.s+'">'
-      +'<div class="sec-head '+sec.s+'" onclick="toggle(this)">'
-      +'<span class="sec-badge '+sec.s+'">Phần '+sec.s+'</span>'
-      +'<span class="sec-title">'+sec.name+'</span>'
-      +'<span class="sec-cnt">'+items.length+' hạng mục</span>'
-      +'<span class="chevron open">▲</span>'
-      +'</div>'
-      +'<div class="tbl-wrap"><table>'
-      +'<thead><tr><th>#</th><th>Hạng mục / Vật tư</th><th>ĐVT</th><th>SL</th><th>Đơn giá ARCH.A</th><th>Giá thị trường</th><th>Thành tiền</th><th>Đánh giá</th><th>Ghi chú</th><th>Tham khảo giá</th></tr></thead>'
-      +'<tbody>'+rows+'</tbody></table></div></div>';
+// Pre-calculate fields for all items
+DATA.forEach(sec => {
+  sec.items.forEach(it => {
+    it.id = sec.s + '-' + it.n;
+    let r = parseRef(it.ref);
+    it.mmin = r.min;
+    it.mmax = r.max;
+    it.overPct = it.mmax > 0 && it.dg > it.mmax ? Math.round(((it.dg - it.mmax) / it.mmax) * 100) : 0;
+    it.saving = it.mmax > 0 && it.dg > it.mmax ? (it.dg - it.mmax) * it.sl : 0;
   });
-  document.getElementById('totalItems').textContent=total;
-  if(!html){main.innerHTML='';empty.classList.remove('hidden');}
-  else{main.innerHTML=html;empty.classList.add('hidden');}
+});
+
+// --- Local Storage Management ---
+function saveLocal(id, key, value) {
+  let data = JSON.parse(localStorage.getItem('baogia_data') || '{}');
+  if (!data[id]) data[id] = {};
+  data[id][key] = value;
+  localStorage.setItem('baogia_data', JSON.stringify(data));
+  updateDashboard();
 }
 
-function toggle(el){
-  var wrap=el.nextElementSibling;
-  var chev=el.querySelector('.chevron');
-  if(wrap.style.display==='none'){
-    wrap.style.display='';chev.textContent='▲';chev.classList.add('open');
-  } else {
-    wrap.style.display='none';chev.textContent='▼';chev.classList.remove('open');
+function getLocal(id, key, defaultVal = '') {
+  let data = JSON.parse(localStorage.getItem('baogia_data') || '{}');
+  return data[id] ? (data[id][key] !== undefined ? data[id][key] : defaultVal) : defaultVal;
+}
+
+function resetAll() {
+  if (confirm('Bạn có chắc chắn muốn xóa tất cả dữ liệu đàm phán và ghi chú?')) {
+    localStorage.removeItem('baogia_data');
+    render();
   }
 }
 
-document.getElementById('search').addEventListener('input',function(e){
-  search=e.target.value; render();
+// --- Utilities ---
+function fmt(n) { if (!n) return '-'; return Math.round(n).toLocaleString('vi-VN') + 'đ'; }
+function fmtShort(n) {
+  if (n >= 1000000000) return (n / 1000000000).toFixed(2) + ' tỷ';
+  if (n >= 1000000) return (n / 1000000).toFixed(1) + ' tr';
+  return fmt(n);
+}
+
+function shopeeUrl(name, brand) { return 'https://shopee.vn/search?keyword=' + encodeURIComponent((brand ? brand + ' ' : '') + name); }
+function lazadaUrl(name, brand) { return 'https://www.lazada.vn/catalog/?q=' + encodeURIComponent((brand ? brand + ' ' : '') + name); }
+function googleUrl(name, brand) { return 'https://www.google.com/search?q=' + encodeURIComponent((brand ? brand + ' ' : '') + name + ' giá'); }
+
+// --- Dashboard ---
+function updateDashboard() {
+  let highCount = 0;
+  let potentialSavings = 0;
+  let agreedCount = 0;
+  let totalItems = 0;
+  let customTotal = 0;
+  let savedTotal = 0;
+
+  DATA.forEach(sec => {
+    sec.items.forEach(it => {
+      totalItems++;
+      let status = getLocal(it.id, 'status', 'pending');
+      let customP = parseFloat(getLocal(it.id, 'price', it.dg));
+      if (isNaN(customP)) customP = it.dg;
+
+      if (it.overPct > 10) highCount++;
+      potentialSavings += it.saving;
+
+      if (status === 'agreed') agreedCount++;
+
+      customTotal += customP * it.sl;
+      if (customP < it.dg) savedTotal += (it.dg - customP) * it.sl;
+    });
+  });
+
+  document.getElementById('highCount').textContent = highCount;
+  document.getElementById('potentialSavings').textContent = fmtShort(potentialSavings);
+  document.getElementById('agreedCount').textContent = agreedCount + ' / ' + totalItems;
+  document.getElementById('customTotal').textContent = fmtShort(customTotal);
+  document.getElementById('savedDisplay').textContent = fmtShort(savedTotal);
+}
+
+// --- Render ---
+var filter = 'all', search = '', sortBy = 'default';
+
+function render() {
+  var main = document.getElementById('main');
+  var empty = document.getElementById('empty');
+  var html = ''; var totalDisp = 0;
+
+  DATA.forEach(function(sec) {
+    if (filter !== 'all' && filter !== sec.s) return;
+    
+    var items = sec.items.filter(function(it) {
+      if (!search) return true;
+      var t = search.toLowerCase();
+      return it.name.toLowerCase().indexOf(t) > -1
+          || (it.brand && it.brand.toLowerCase().indexOf(t) > -1)
+          || (it.note && it.note.toLowerCase().indexOf(t) > -1);
+    });
+
+    if (sortBy === 'overprice') items.sort((a,b) => b.overPct - a.overPct);
+    else if (sortBy === 'savings') items.sort((a,b) => b.saving - a.saving);
+    else if (sortBy === 'total') items.sort((a,b) => b.tt - a.tt);
+    else items.sort((a,b) => a.n - b.n); // default
+
+    if (!items.length) return;
+    totalDisp += items.length;
+    var rows = '';
+
+    items.forEach(function(it) {
+      let status = getLocal(it.id, 'status', 'pending');
+      let customP = getLocal(it.id, 'price', '');
+      let myNote = getLocal(it.id, 'note', '');
+
+      let overBadge = it.overPct > 20 ? '<span class="over-badge over-high">+' + it.overPct + '%</span>' :
+                      it.overPct > 0 ? '<span class="over-badge over-mid">+' + it.overPct + '%</span>' : '';
+      
+      let pBar = '';
+      if (it.mmax > 0) {
+        let pct = Math.min(100, (it.mmax / it.dg) * 100);
+        let barClass = pct < 70 ? 'bar-high' : pct < 90 ? 'bar-mid' : 'bar-ok';
+        pBar = '<div class="price-bar-wrap"><div class="price-bar"><div class="price-bar-fill ' + barClass + '" style="width:' + pct + '%"></div></div><div class="price-bar-labels"><span>Thị trường</span><span>Báo giá</span></div></div>';
+      }
+
+      let saveStr = it.saving > 0 ? fmt(it.saving) : '-';
+
+      rows += '<tr class="row-' + status + '">'
+        + '<td class="td-n">' + it.n + '</td>'
+        + '<td class="td-name"><strong>' + it.name + '</strong>' + (it.brand ? '<br><span class="brand">' + it.brand + '</span>' : '') + '</td>'
+        + '<td class="td-unit">' + it.dvt + '<br>SL: ' + it.sl + '</td>'
+        + '<td class="td-price">' + fmt(it.dg) + overBadge + pBar + '</td>'
+        + '<td class="td-ref">Khung giá:<br><b>' + (it.ref || '-') + '</b></td>'
+        + '<td class="td-save">' + saveStr + '</td>'
+        + '<td class="td-total">' + fmt(it.tt) + '</td>'
+        + '<td class="td-custom"><input type="number" placeholder="Giá chốt..." value="' + customP + '" onchange="saveLocal(\'' + it.id + '\', \'price\', this.value); updateDashboard();"></td>'
+        + '<td class="td-status"><select class="s-' + status + '" onchange="saveLocal(\'' + it.id + '\', \'status\', this.value); render();">'
+        + '<option value="pending" ' + (status === 'pending' ? 'selected' : '') + '>Chưa chốt</option>'
+        + '<option value="negotiating" ' + (status === 'negotiating' ? 'selected' : '') + '>Đang đàm phán</option>'
+        + '<option value="agreed" ' + (status === 'agreed' ? 'selected' : '') + '>Đã đồng ý</option>'
+        + '</select></td>'
+        + '<td class="td-note-cell"><input type="text" placeholder="Ghi chú cá nhân..." value="' + myNote + '" onchange="saveLocal(\'' + it.id + '\', \'note\', this.value)"></td>'
+        + '<td class="td-act"><div class="buy-links">'
+        + '<a class="buy-btn btn-shopee" href="' + shopeeUrl(it.name, it.brand) + '" target="_blank">Shopee</a>'
+        + '<a class="buy-btn btn-lazada" href="' + lazadaUrl(it.name, it.brand) + '" target="_blank">Lazada</a>'
+        + '<a class="buy-btn btn-google" href="' + googleUrl(it.name, it.brand) + '" target="_blank">Google</a>'
+        + '</div></td>'
+        + '</tr>';
+    });
+
+    let secTotal = items.reduce((sum, it) => sum + it.tt, 0);
+    let secSaving = items.reduce((sum, it) => sum + it.saving, 0);
+
+    html += '<div class="section" data-s="' + sec.s + '">'
+      + '<div class="sec-head ' + sec.s + '" onclick="toggle(this)">'
+      + '<span class="sec-badge ' + sec.s + '">Phần ' + sec.s + '</span>'
+      + '<span class="sec-title">' + sec.name + '</span>'
+      + '<span class="sec-saving">Tiết kiệm: ' + fmtShort(secSaving) + '</span>'
+      + '<span class="sec-cnt">' + items.length + ' mục</span>'
+      + '<svg class="chevron open" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m18 15-6-6-6 6"/></svg>'
+      + '</div>'
+      + '<div class="tbl-wrap"><table>'
+      + '<thead><tr><th>#</th><th>Hạng mục</th><th>ĐVT / SL</th><th>Đơn giá ARCH.A</th><th>Giá thị trường</th><th>Tiết kiệm</th><th>Thành tiền</th><th>Giá đàm phán</th><th>Trạng thái</th><th>Ghi chú</th><th>Khảo giá</th></tr></thead>'
+      + '<tbody>' + rows + '</tbody></table></div></div>';
+  });
+
+  document.getElementById('totalItems').textContent = totalDisp;
+  if (!html) { main.innerHTML = ''; empty.classList.remove('hidden'); }
+  else { main.innerHTML = html; empty.classList.add('hidden'); }
+  
+  updateDashboard();
+}
+
+function toggle(el) {
+  var wrap = el.nextElementSibling;
+  var chev = el.querySelector('.chevron');
+  if (wrap.style.display === 'none') {
+    wrap.style.display = ''; chev.classList.add('open'); chev.classList.remove('closed');
+  } else {
+    wrap.style.display = 'none'; chev.classList.remove('open'); chev.classList.add('closed');
+  }
+}
+
+document.getElementById('search').addEventListener('input', function(e) {
+  search = e.target.value; render();
 });
-document.getElementById('tabs').addEventListener('click',function(e){
-  var btn=e.target.closest('.tab');
-  if(!btn) return;
-  document.querySelectorAll('.tab').forEach(function(b){b.classList.remove('active');});
+
+document.getElementById('tabs').addEventListener('click', function(e) {
+  var btn = e.target.closest('.tab');
+  if (!btn) return;
+  document.querySelectorAll('.tab').forEach(function(b) { b.classList.remove('active'); });
   btn.classList.add('active');
-  filter=btn.dataset.f;
+  filter = btn.dataset.f;
   render();
 });
 
+document.getElementById('sortBy').addEventListener('change', function(e) {
+  sortBy = e.target.value; render();
+});
+
+// Init
 render();
