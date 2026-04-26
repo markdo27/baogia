@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import * as xlsx from 'xlsx';
 import PDFParser from 'pdf2json';
-import { withCircuitBreaker, validateAIExtractionOutput } from '@/lib/fallback/circuit-breaker';
+import { withCircuitBreaker, validateAIExtractionOutput, type PipelineMode } from '@/lib/fallback/circuit-breaker';
 import { parseExcel } from '@/lib/fallback/excel-parser';
 import { parsePDF } from '@/lib/fallback/pdf-parser';
 
@@ -55,6 +55,8 @@ export async function POST(req: Request) {
   try {
     const formData = await req.formData();
     const file = formData.get('file') as File;
+    const forceMode = (formData.get('forceMode') as string) ?? 'auto';
+    const mode: PipelineMode = ['ai', 'fallback', 'auto'].includes(forceMode) ? forceMode as PipelineMode : 'auto';
 
     if (!file) return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
 
@@ -103,6 +105,7 @@ export async function POST(req: Request) {
       'extract',
       aiTask,
       fallbackTask,
+      mode,
     );
 
     console.log(`[extract] pipeline=${pipeline} duration=${durationMs}ms items=${data.length}`);

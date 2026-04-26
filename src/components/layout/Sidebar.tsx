@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
+import PipelineToggle from './PipelineToggle';
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -91,6 +92,11 @@ export default function Sidebar() {
             );
           })}
         </nav>
+      </div>
+
+      {/* Pipeline toggle — pinned to bottom */}
+      <div className="mt-auto">
+        <PipelineToggle />
       </div>
     </aside>
   );

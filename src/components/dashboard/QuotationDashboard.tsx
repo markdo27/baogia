@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Printer, AlertTriangle, TrendingDown, CheckCircle, Wallet, Search, Loader2, Zap, Trash2 } from 'lucide-react';
+import { Printer, AlertTriangle, TrendingDown, CheckCircle, Wallet, Search, Loader2, Zap, Trash2, Bot, Database } from 'lucide-react';
+import { usePipelineMode } from '@/components/layout/PipelineToggle';
 
 const STATUS_CONFIG = {
   pending:     { label: 'Chưa chốt',   active: 'bg-[var(--surface2)] text-[var(--text2)] border-[var(--border)]' },
@@ -37,6 +38,7 @@ export default function QuotationDashboard({ quotation }: { quotation: any }) {
   const [expandedHistoryId, setExpandedHistoryId] = useState<string | null>(null);
   const [contributeToast, setContributeToast] = useState<{ itemId: string; itemName: string } | null>(null);
   const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
+  const [pipelineMode] = usePipelineMode();
 
   const searchParams = useSearchParams();
   const categoryFilter = searchParams.get('category');
@@ -123,7 +125,13 @@ export default function QuotationDashboard({ quotation }: { quotation: any }) {
       const res = await fetch('/api/market-price', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ itemId: item.id, name: item.name, brand: item.brand, unit: item.unit }),
+        body: JSON.stringify({
+          itemId: item.id,
+          name: item.name,
+          brand: item.brand,
+          unit: item.unit,
+          forceMode: pipelineMode,
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
@@ -256,15 +264,21 @@ export default function QuotationDashboard({ quotation }: { quotation: any }) {
             })}
           </div>
 
-          {/* Batch AI pricing */}
+          {/* Batch pricing — label reflects active pipeline mode */}
           {unpricedCount > 0 && (
             <button
               onClick={fetchAllUnpriced}
               disabled={batchLoading}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[var(--ylw-bg)] border border-[var(--ylw-border)] text-[var(--ylw)] text-[12px] font-semibold hover:bg-[var(--ylw)] hover:text-white transition-colors disabled:opacity-60"
             >
-              {batchLoading ? <Loader2 size={13} className="animate-spin" /> : <Zap size={13} />}
-              Tra giá {unpricedCount} mục chưa có giá
+              {batchLoading
+                ? <Loader2 size={13} className="animate-spin" />
+                : pipelineMode === 'ai'       ? <Bot size={13} />
+                : pipelineMode === 'fallback' ? <Database size={13} />
+                : <Zap size={13} />}
+              {pipelineMode === 'ai'       ? `Tra giá AI ✦ ${unpricedCount} mục`
+               : pipelineMode === 'fallback' ? `Tra giá Offline ${unpricedCount} mục`
+               : `Tra giá ${unpricedCount} mục chưa có giá`}
             </button>
           )}
         </div>
@@ -380,17 +394,24 @@ export default function QuotationDashboard({ quotation }: { quotation: any }) {
                                   </div>
                                 )}
                                 <div className="font-bold text-[var(--text)] tabular-nums">{fmt(item.marketPrice)}</div>
-                                <div className="flex items-center justify-end gap-1.5 mt-0.5">
+                                <div className="flex items-center justify-end gap-1.5 mt-0.5 flex-wrap">
                                   {item.priceConfidence && (
                                     <span className={`text-[9px] font-bold px-1 py-0.5 rounded leading-none
-                                      ${item.priceConfidence === 'high' ? 'bg-[var(--grn-bg)] text-[var(--grn)]' :
+                                      ${item.priceConfidence === 'high'   ? 'bg-[var(--grn-bg)] text-[var(--grn)]' :
                                         item.priceConfidence === 'medium' ? 'bg-[var(--ylw-bg)] text-[var(--ylw)]' :
                                         'bg-[var(--red-bg)] text-[var(--red)]'}`}>
                                       {item.priceConfidence === 'high' ? '● Cao' : item.priceConfidence === 'medium' ? '● TB' : '● Thấp'}
                                     </span>
                                   )}
+                                  {/* Pipeline source badge */}
                                   {item.priceSource && (
-                                    <span className="text-[9px] text-[var(--text4)] font-medium">{item.priceSource}</span>
+                                    item.priceSource.includes('★')
+                                      ? <span className="inline-flex items-center gap-0.5 text-[8.5px] font-bold px-1.5 py-0.5 rounded bg-[var(--ylw-bg)] text-[var(--ylw)] border border-[var(--ylw-border)] leading-none">
+                                          <Database size={8} /> Offline
+                                        </span>
+                                      : <span className="inline-flex items-center gap-0.5 text-[8.5px] font-bold px-1.5 py-0.5 rounded bg-[var(--grn-bg)] text-[var(--grn)] border border-[var(--grn-border)] leading-none">
+                                          <Bot size={8} /> AI
+                                        </span>
                                   )}
                                 </div>
                               </div>
@@ -399,8 +420,12 @@ export default function QuotationDashboard({ quotation }: { quotation: any }) {
                                 onClick={() => fetchMarketPrice(item)}
                                 className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-[var(--acc-light)] border border-[var(--acc-ring)] text-[var(--acc)] text-[11.5px] font-semibold hover:bg-[var(--acc)] hover:text-white hover:border-[var(--acc)] transition-colors ml-auto"
                               >
-                                <Search size={11} />
-                                Tra giá AI
+                                {pipelineMode === 'ai'       ? <Bot size={11} />
+                                 : pipelineMode === 'fallback' ? <Database size={11} />
+                                 : <Search size={11} />}
+                                {pipelineMode === 'ai'       ? 'Tra giá AI ✦'
+                                 : pipelineMode === 'fallback' ? 'Tra giá Offline'
+                                 : 'Tra giá'}
                               </button>
                             )}
                           </td>

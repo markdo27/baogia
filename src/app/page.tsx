@@ -4,6 +4,7 @@ import { UploadCloud, FileText, FileSpreadsheet, Loader2 } from 'lucide-react';
 import { useState, useCallback, useRef } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useRouter } from 'next/navigation';
+import { usePipelineMode } from '@/components/layout/PipelineToggle';
 
 const SEGMENTS = [
   { label: 'Đọc file',      from: 0,  to: 33 },
@@ -55,6 +56,7 @@ export default function Home() {
   const [uploadStatus, setUploadStatus] = useState('');
   const [progress, setProgress] = useState(0);
   const progressRef = useRef(0);
+  const [pipelineMode] = usePipelineMode();
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
@@ -76,6 +78,7 @@ export default function Home() {
 
     const formData = new FormData();
     formData.append('file', file);
+    formData.append('forceMode', pipelineMode);
 
     try {
       const response = await fetch('/api/extract', { method: 'POST', body: formData });
@@ -181,6 +184,17 @@ export default function Home() {
                 <FileSpreadsheet size={12} className="text-emerald-500" />
                 <span className="text-[11.5px] text-[var(--text3)]">.XLSX · .CSV</span>
               </div>
+            </div>
+
+            {/* Active pipeline indicator */}
+            <div className={`mt-4 flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10.5px] font-semibold
+              ${pipelineMode === 'fallback'
+                ? 'bg-[var(--ylw-bg)] border-[var(--ylw-border)] text-[var(--ylw)]'
+                : 'bg-[var(--grn-bg)] border-[var(--grn-border)] text-[var(--grn)]'}`}>
+              <span className={`w-1.5 h-1.5 rounded-full ${pipelineMode === 'fallback' ? 'bg-[var(--ylw)]' : 'bg-[var(--grn)] animate-pulse'}`} />
+              {pipelineMode === 'ai'       ? 'Sẽ dùng AI để trích xuất'
+               : pipelineMode === 'fallback' ? 'Sẽ dùng trích xuất truyền thống (Offline)'
+               : 'AI với dự phòng tự động'}
             </div>
           </div>
         )}

@@ -1,14 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import { Search, Loader2 } from 'lucide-react';
+import { Search, Loader2, Bot, Database } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
+import { usePipelineMode } from '@/components/layout/PipelineToggle';
 
 export default function QuotationTable({ initialItems }: { initialItems: any[] }) {
   const [items, setItems] = useState(initialItems);
   const [loadingItems, setLoadingItems] = useState<Record<string, boolean>>({});
   const searchParams = useSearchParams();
   const categoryFilter = searchParams.get('category');
+  const [pipelineMode] = usePipelineMode();
 
   const fetchMarketPrice = async (item: any) => {
     setLoadingItems(prev => ({ ...prev, [item.id]: true }));
@@ -20,13 +22,12 @@ export default function QuotationTable({ initialItems }: { initialItems: any[] }
           itemId: item.id,
           name: item.name,
           brand: item.brand,
-          unit: item.unit
+          unit: item.unit,
+          forceMode: pipelineMode,
         })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-
-      // Update local state
       setItems(prev => prev.map(i => i.id === item.id ? data.item : i));
     } catch (err) {
       console.error(err);
@@ -42,6 +43,20 @@ export default function QuotationTable({ initialItems }: { initialItems: any[] }
     ? items.filter(item => item.category && item.category.includes(categoryFilter))
     : items;
 
+  // Button label by pipeline mode
+  const btnLabel =
+    pipelineMode === 'ai'       ? 'Tra giá AI ✦' :
+    pipelineMode === 'fallback' ? 'Tra giá Offline' : 'Tra giá';
+
+  // Pipeline badge shown after price is fetched
+  const PipelineBadge = ({ source }: { source?: string }) => {
+    if (!source) return null;
+    const isOffline = source.includes('★');
+    return isOffline
+      ? <span className="inline-flex items-center gap-0.5 text-[9px] font-bold px-1.5 py-0.5 rounded bg-[var(--ylw-bg)] text-[var(--ylw)] border border-[var(--ylw-border)]"><Database size={8} />Offline</span>
+      : <span className="inline-flex items-center gap-0.5 text-[9px] font-bold px-1.5 py-0.5 rounded bg-[var(--grn-bg)] text-[var(--grn)] border border-[var(--grn-border)]"><Bot size={8} />AI</span>;
+  };
+
   return (
     <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl shadow-sm overflow-hidden flex flex-col h-[calc(100vh-160px)]">
       <div className="flex-1 overflow-auto">
@@ -55,7 +70,7 @@ export default function QuotationTable({ initialItems }: { initialItems: any[] }
               <th className="py-3 px-4 font-semibold text-[11px] text-[var(--text3)] uppercase w-20 text-center">SL</th>
               <th className="py-3 px-4 font-semibold text-[11px] text-[var(--text3)] uppercase w-32 text-right">Đơn giá báo</th>
               <th className="py-3 px-4 font-semibold text-[11px] text-[var(--text3)] uppercase w-32 text-right">Thành tiền</th>
-              <th className="py-3 px-4 font-semibold text-[11px] text-[var(--text3)] uppercase w-40 text-right">Giá thị trường (AI)</th>
+              <th className="py-3 px-4 font-semibold text-[11px] text-[var(--text3)] uppercase w-40 text-right">Giá thị trường</th>
               <th className="py-3 px-4 font-semibold text-[11px] text-[var(--text3)] uppercase w-24 text-center">Trạng thái</th>
             </tr>
           </thead>
@@ -83,7 +98,7 @@ export default function QuotationTable({ initialItems }: { initialItems: any[] }
                   <td className="py-3 px-4 text-right font-medium">{formatMoney(item.unitPrice)}</td>
                   <td className="py-3 px-4 text-right font-bold text-[var(--acc)]">{formatMoney(item.totalPrice)}</td>
                   
-                  {/* AI Market Price Column */}
+                  {/* Market Price Column */}
                   <td className="py-3 px-4 text-right">
                     {loadingItems[item.id] ? (
                       <div className="flex items-center justify-end gap-2 text-[var(--text3)]">
@@ -91,23 +106,22 @@ export default function QuotationTable({ initialItems }: { initialItems: any[] }
                         <span className="text-[11px]">Đang tìm...</span>
                       </div>
                     ) : item.marketPrice ? (
-                      <div className="flex flex-col items-end">
+                      <div className="flex flex-col items-end gap-1">
                         <span className="font-bold text-[var(--text)]">{formatMoney(item.marketPrice)}</span>
                         {isOverpriced && (
-                          <span className="text-[11px] text-[var(--red)] font-medium mt-0.5">
-                            Cao hơn {formatMoney(diff!)}
-                          </span>
+                          <span className="text-[11px] text-[var(--red)] font-medium">Cao hơn {formatMoney(diff!)}</span>
                         )}
                         {!isOverpriced && (
-                          <span className="text-[11px] text-[var(--grn)] font-medium mt-0.5">Giá hợp lý</span>
+                          <span className="text-[11px] text-[var(--grn)] font-medium">Giá hợp lý</span>
                         )}
+                        <PipelineBadge source={item.priceSource} />
                       </div>
                     ) : (
                       <button 
                         onClick={() => fetchMarketPrice(item)}
                         className="opacity-0 group-hover:opacity-100 transition-opacity inline-flex items-center gap-1.5 px-3 py-1.5 bg-[var(--surface)] border border-[var(--border)] rounded text-[11px] font-medium text-[var(--text2)] hover:border-[var(--acc)] hover:text-[var(--acc)] shadow-sm"
                       >
-                        <Search size={12} /> Tra giá AI
+                        <Search size={12} /> {btnLabel}
                       </button>
                     )}
                   </td>

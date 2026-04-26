@@ -33,31 +33,38 @@ function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise
   ]);
 }
 
+export type PipelineMode = 'auto' | 'ai' | 'fallback';
+
 /**
  * Attempt AI pipeline; if it fails or times out, execute fallback silently.
- * Both pipelines must return the same output shape T.
+ * forceMode: 'auto' = normal circuit breaker | 'ai' = AI only, no fallback | 'fallback' = skip AI entirely
  */
 export async function withCircuitBreaker<T>(
   context: keyof typeof AI_TIMEOUT_MS,
   aiTask: () => Promise<T>,
   fallbackTask: () => Promise<T>,
+  forceMode: PipelineMode = 'auto',
 ): Promise<PipelineResult<T>> {
   const start = Date.now();
+
+  // Force fallback: skip AI completely
+  if (forceMode === 'fallback') {
+    const data = await fallbackTask();
+    return { data, pipeline: 'fallback', durationMs: Date.now() - start, fallbackReason: 'User selected Non-AI mode' };
+  }
 
   try {
     const data = await withTimeout(aiTask(), AI_TIMEOUT_MS[context], context);
     return { data, pipeline: 'ai', durationMs: Date.now() - start };
   } catch (err: any) {
     const reason = err?.message ?? 'Unknown AI failure';
-    console.warn(`[CircuitBreaker:${context}] AI failed → fallback. Reason: ${reason}`);
+    console.warn(`[CircuitBreaker:${context}] AI failed → ${forceMode === 'ai' ? 'ERROR (AI-only mode)' : 'fallback'}. Reason: ${reason}`);
+
+    // AI-only mode: do not fall back, propagate the error
+    if (forceMode === 'ai') throw new Error(`AI unavailable: ${reason}`);
 
     const data = await fallbackTask();
-    return {
-      data,
-      pipeline: 'fallback',
-      durationMs: Date.now() - start,
-      fallbackReason: reason,
-    };
+    return { data, pipeline: 'fallback', durationMs: Date.now() - start, fallbackReason: reason };
   }
 }
 

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { PrismaClient } from '@prisma/client';
-import { withCircuitBreaker, validateAIMarketPriceOutput } from '@/lib/fallback/circuit-breaker';
+import { withCircuitBreaker, validateAIMarketPriceOutput, type PipelineMode } from '@/lib/fallback/circuit-breaker';
 import { lookupPrice } from '@/lib/fallback/price-db-lookup';
 
 const prisma = new PrismaClient();
@@ -15,7 +15,8 @@ export const maxDuration = 60;
 
 export async function POST(req: Request) {
   try {
-    const { itemId, name, brand, unit, category } = await req.json();
+    const { itemId, name, brand, unit, category, forceMode } = await req.json();
+    const mode: PipelineMode = forceMode ?? 'auto';
     if (!itemId || !name) return NextResponse.json({ error: 'Missing parameters' }, { status: 400 });
 
     // ── AI pipeline (primary) ──────────────────────────────────────────────
@@ -78,6 +79,7 @@ ONLY return valid JSON, no markdown.`;
       'marketPrice',
       aiTask,
       fallbackTask,
+      mode,
     );
 
     console.log(`[market-price] pipeline=${pipeline} duration=${durationMs}ms item="${name}"`);
