@@ -276,14 +276,31 @@ export default function QuotationDashboard({ quotation }: { quotation: any }) {
                             {isOverpriced && <div className="text-[10px] font-bold text-[var(--red)] mt-0.5">+{pct}%</div>}
                           </td>
 
-                          {/* Market price */}
+                          {/* Market price — Price Intelligence Card */}
                           <td className="py-2.5 px-3 text-right">
                             {loadingItems[item.id] ? (
                               <div className="flex justify-end"><Loader2 size={14} className="animate-spin text-[var(--text3)]" /></div>
                             ) : item.marketPrice ? (
-                              <div>
-                                <div className="font-bold text-[var(--text)]">{fmt(item.marketPrice)}</div>
-                                <div className="text-[9px] font-medium text-[var(--text3)] uppercase tracking-wide mt-0.5">Thị trường</div>
+                              <div className="text-right">
+                                {item.priceRangeLow && item.priceRangeHigh && (
+                                  <div className="text-[10px] text-[var(--text3)] mb-0.5 tabular-nums">
+                                    {fmt(item.priceRangeLow)} – {fmt(item.priceRangeHigh)}
+                                  </div>
+                                )}
+                                <div className="font-bold text-[var(--text)] tabular-nums">{fmt(item.marketPrice)}</div>
+                                <div className="flex items-center justify-end gap-1.5 mt-0.5">
+                                  {item.priceConfidence && (
+                                    <span className={`text-[9px] font-bold px-1 py-0.5 rounded leading-none
+                                      ${item.priceConfidence === 'high' ? 'bg-[var(--grn-bg)] text-[var(--grn)]' :
+                                        item.priceConfidence === 'medium' ? 'bg-[var(--ylw-bg)] text-[var(--ylw)]' :
+                                        'bg-[var(--red-bg)] text-[var(--red)]'}`}>
+                                      {item.priceConfidence === 'high' ? '● Cao' : item.priceConfidence === 'medium' ? '● TB' : '● Thấp'}
+                                    </span>
+                                  )}
+                                  {item.priceSource && (
+                                    <span className="text-[9px] text-[var(--text4)] font-medium">{item.priceSource}</span>
+                                  )}
+                                </div>
                               </div>
                             ) : (
                               <button

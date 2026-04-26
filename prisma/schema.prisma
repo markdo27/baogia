@@ -42,9 +42,16 @@ model LineItem {
   note         String?
   
   // Evaluation (AI or manual)
-  evaluation   String?   // 'high', 'mid', 'ok'
-  marketPrice  Float?    // The AI-found market price
-  marketUrl    String?   // Proof URL
+  evaluation      String?   // 'high', 'mid', 'ok'
+  marketPrice     Float?    // The AI-found median market price
+  marketUrl       String?   // Proof URL
+
+  // Price Intelligence Card (Phase 1)
+  priceRangeLow   Float?    // Lower bound of market price range
+  priceRangeHigh  Float?    // Upper bound of market price range
+  priceConfidence String?   // 'high', 'medium', 'low'
+  priceSource     String?   // e.g. 'Shopee', 'Lazada', 'AI estimate'
+  priceFetchedAt  DateTime? // When the price was last fetched
   
   // Status (pending, negotiating, agreed)
   status       String    @default("pending")

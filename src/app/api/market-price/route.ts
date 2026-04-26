@@ -9,30 +9,36 @@ const openai = new OpenAI({
 });
 
 const MODEL = process.env.OPENAI_MODEL || 'gpt-4o';
-
-export const maxDuration = 60; // Allow up to 60s
+export const maxDuration = 60;
 
 export async function POST(req: Request) {
   try {
     const { itemId, name, brand, unit } = await req.json();
+    if (!itemId || !name) return NextResponse.json({ error: 'Missing parameters' }, { status: 400 });
 
-    if (!itemId || !name) {
-      return NextResponse.json({ error: 'Missing parameters' }, { status: 400 });
-    }
+    const prompt = `You are a senior procurement specialist in Vietnam with deep knowledge of construction and interior material pricing.
 
-    const prompt = `You are a procurement expert in Vietnam. Estimate the current market price for the following construction/interior item:
-Name: ${name}
-Brand: ${brand || 'Unknown'}
-Unit: ${unit}
+Estimate the CURRENT market price range for this item in Vietnam (prices in VND):
+- Name: ${name}
+- Brand: ${brand || 'Any / Generic'}
+- Unit: ${unit}
 
-Return ONLY a valid JSON object matching this schema:
+Return ONLY a valid JSON object:
 {
-  "marketPrice": Number (the estimated average price in VND, do not include commas or currency symbols),
-  "marketUrl": "String (A generic google search URL for this product or a placeholder link)",
-  "evaluation": "String ('high' if the quoted price is usually lower, 'mid', or 'ok')"
+  "priceLow": Number (lower bound, e.g. budget/generic brand),
+  "priceMedian": Number (typical mid-market price),
+  "priceHigh": Number (premium/branded price),
+  "confidence": "high" | "medium" | "low",
+  "source": "Shopee" | "Lazada" | "Thiết bị điện" | "Vật liệu xây dựng" | "AI estimate",
+  "evaluation": "high" | "mid" | "ok",
+  "marketUrl": "String (a relevant Google or Shopee search URL)"
 }
 
-IMPORTANT: Return ONLY valid JSON without markdown formatting.`;
+Rules:
+- confidence = "high" if this is a common, widely-sold item with clear pricing
+- confidence = "medium" if pricing varies significantly by brand/region
+- confidence = "low" if this is specialized, rare, or pricing is unclear
+- ONLY return valid JSON, no markdown.`;
 
     const response = await openai.chat.completions.create({
       model: MODEL,
@@ -41,23 +47,27 @@ IMPORTANT: Return ONLY valid JSON without markdown formatting.`;
     });
 
     const aiContent = response.choices[0]?.message?.content || '{}';
-    const cleanedJson = aiContent.replace(/^```json\s*/i, '').replace(/\s*```$/i, '').trim();
-    
-    let parsedData;
+    const cleaned = aiContent.replace(/^```json\s*/i, '').replace(/\s*```$/i, '').trim();
+
+    let parsed: any;
     try {
-      parsedData = JSON.parse(cleanedJson);
-    } catch (e) {
-      throw new Error("AI returned invalid JSON: " + cleanedJson);
+      parsed = JSON.parse(cleaned);
+    } catch {
+      throw new Error('AI returned invalid JSON: ' + cleaned);
     }
 
-    // Update the DB
     const updatedItem = await prisma.lineItem.update({
       where: { id: itemId },
       data: {
-        marketPrice: parsedData.marketPrice,
-        marketUrl: parsedData.marketUrl,
-        evaluation: parsedData.evaluation
-      }
+        marketPrice:     parsed.priceMedian,
+        priceRangeLow:   parsed.priceLow,
+        priceRangeHigh:  parsed.priceHigh,
+        priceConfidence: parsed.confidence,
+        priceSource:     parsed.source,
+        priceFetchedAt:  new Date(),
+        marketUrl:       parsed.marketUrl,
+        evaluation:      parsed.evaluation,
+      },
     });
 
     return NextResponse.json({ success: true, item: updatedItem });
