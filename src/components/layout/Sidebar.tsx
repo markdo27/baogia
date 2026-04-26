@@ -35,19 +35,20 @@ export default function Sidebar() {
 
   return (
     <aside className="fixed left-0 top-0 bottom-0 w-[232px] bg-[var(--surface)] border-r border-[var(--border)] flex flex-col z-50 transition-all duration-200">
-      <div className="flex items-center gap-2.5 p-4 border-b border-[var(--border-subtle)]">
-        <div className="text-xl leading-snug flex-1 truncate">
-          Price<strong className="font-extrabold text-[var(--text)] tracking-tight">Audit</strong>
+      <div className="px-4 py-4 border-b border-[var(--border-subtle)]">
+        <div className="flex items-center justify-between">
+          <span className="text-[15px] font-extrabold tracking-[-0.03em] text-[var(--text)] select-none">
+            Price<span className="text-[var(--acc)]">Audit</span>
+          </span>
+          <button className="w-[24px] h-[24px] flex items-center justify-center rounded-md text-[var(--text3)] hover:bg-[var(--surface2)] hover:text-[var(--text2)] transition-colors shrink-0">
+            <ChevronLeft size={14} />
+          </button>
         </div>
-        <button className="w-[26px] h-[26px] flex items-center justify-center rounded-md text-[var(--text3)] hover:bg-[var(--surface2)] hover:text-[var(--text2)] transition-colors shrink-0">
-          <ChevronLeft size={16} />
-        </button>
+        <p className="text-[10.5px] text-[var(--text3)] mt-0.5 font-medium tracking-wide">AI Quotation Intelligence</p>
       </div>
 
       <div className="p-4 pb-1">
-        <div className="px-1.5 pb-1.5 text-[10px] font-semibold uppercase tracking-widest text-[var(--text3)]">
-          Quản lý
-        </div>
+        <p className="px-1.5 pb-2 pt-1 text-[9.5px] font-semibold uppercase tracking-[0.1em] text-[var(--text4)]">Quản lý</p>
         <nav className="flex flex-col gap-[1px] mb-6">
           {mainNav.map((item) => {
             const isActive = pathname === item.href;
@@ -69,9 +70,7 @@ export default function Sidebar() {
           })}
         </nav>
 
-        <div className="px-1.5 pb-1.5 text-[10px] font-semibold uppercase tracking-widest text-[var(--text3)]">
-          Phân mục
-        </div>
+        <p className="px-1.5 pb-2 pt-4 text-[9.5px] font-semibold uppercase tracking-[0.1em] text-[var(--text4)]">Phân mục</p>
         <nav className="flex flex-col gap-[1px]">
           {categoryItems.map((item) => {
             const isActive = (currentCategory || '') === item.query;

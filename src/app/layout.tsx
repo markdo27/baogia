@@ -1,15 +1,17 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({
-  variable: "--font-inter",
+const plusJakartaSans = Plus_Jakarta_Sans({
+  variable: "--font-sans",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "Quotation Checker - Auditing SaaS",
-  description: "AI-Powered Construction Quotation Auditing Tool",
+  title: "Price Audit — AI Quotation Auditing",
+  description: "Automatically extract, compare, and negotiate construction quotations with AI-powered price intelligence.",
 };
 
 import Sidebar from '@/components/layout/Sidebar';
@@ -24,7 +26,7 @@ export default function RootLayout({
   return (
     <html
       lang="vi"
-      className={`${inter.variable} h-full antialiased`}
+      className={`${plusJakartaSans.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col font-sans">
         <Suspense fallback={<aside className="fixed left-0 top-0 bottom-0 w-[232px] bg-[var(--surface)] border-r border-[var(--border)]" />}>

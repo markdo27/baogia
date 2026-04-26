@@ -81,64 +81,67 @@ export default function Home() {
   });
 
   return (
-    <div className="flex-1 flex flex-col items-center justify-center pt-10">
-      <div className="w-full max-w-2xl text-center mb-8">
-        <h1 className="text-3xl font-bold tracking-tight text-[var(--text)] mb-3">Tải lên Bảng báo giá</h1>
-        <p className="text-[var(--text3)] text-sm">
-          Hệ thống sẽ tự động trích xuất dữ liệu từ file PDF hoặc Excel và tiến hành so sánh giá thị trường bằng AI.
+    <div className="flex-1 flex flex-col pt-8 max-w-2xl">
+      <div className="mb-8">
+        <h1 className="text-[22px] font-bold tracking-[-0.02em] text-[var(--text)] mb-1.5">Tải lên bảng báo giá</h1>
+        <p className="text-[var(--text3)] text-[13.5px] leading-relaxed">
+          Hệ thống sẽ đọc file của bạn, trích xuất toàn bộ hạng mục và đối chiếu giá thị trường bằng AI — không cần nhập tay.
         </p>
       </div>
 
       <div 
         {...getRootProps()} 
-        className={`w-full max-w-2xl bg-[var(--surface)] border-2 border-dashed rounded-2xl p-12 text-center transition-colors 
-          ${isDragActive ? 'border-[var(--acc)] bg-[var(--acc-light)]' : 'border-[var(--border)] hover:border-[var(--acc)]'} 
-          ${isUploading ? 'opacity-75 cursor-not-allowed' : 'cursor-pointer group'}`}
+        className={`w-full bg-[var(--surface)] border border-dashed rounded-xl transition-all duration-150
+          ${isDragActive ? 'border-[var(--acc)] bg-[var(--acc-light)] shadow-[0_0_0_4px_var(--acc-ring)]' : 'border-[var(--border)] hover:border-[var(--acc)] hover:shadow-[0_0_0_3px_var(--acc-ring)]'} 
+          ${isUploading ? 'opacity-80 cursor-not-allowed pointer-events-none' : 'cursor-pointer'}`}
       >
         <input {...getInputProps()} />
         
         {isUploading ? (
-          <div className="flex flex-col items-center justify-center py-6 w-full max-w-md mx-auto">
-            <Loader2 size={36} className="text-[var(--acc)] animate-spin mb-6" />
-            <p className="text-[var(--text)] font-medium mb-4">{uploadStatus}</p>
-            
-            <div className="w-full h-3 bg-[var(--surface2)] rounded-full overflow-hidden mb-2 relative">
-              <div 
-                className="h-full bg-[var(--acc)] rounded-full transition-all duration-500 ease-out relative overflow-hidden"
-                style={{ width: `${progress}%` }}
-              >
-                {/* Shimmer effect inside progress bar */}
-                <div className="absolute top-0 left-0 bottom-0 right-0 bg-white/20 -skew-x-12 animate-[shimmer_2s_infinite] w-full" style={{ transform: 'translateX(-100%)' }}></div>
-              </div>
+          <div className="flex flex-col items-start p-7 gap-4">
+            <div className="flex items-center gap-3">
+              <Loader2 size={18} className="text-[var(--acc)] animate-spin shrink-0" />
+              <p className="text-[13.5px] text-[var(--text)] font-medium">{uploadStatus}</p>
             </div>
-            <div className="flex justify-between w-full text-xs text-[var(--text3)] font-medium">
-              <span>Đang xử lý...</span>
-              <span>{Math.round(progress)}%</span>
+            <div className="w-full">
+              <div className="w-full h-1.5 bg-[var(--surface2)] rounded-full overflow-hidden mb-2">
+                <div 
+                  className="h-full bg-[var(--acc)] rounded-full transition-all duration-700 ease-out"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+              <div className="flex justify-between text-[11.5px] text-[var(--text3)]">
+                <span>AI đang phân tích nội dung...</span>
+                <span className="font-medium tabular-nums">{Math.round(progress)}%</span>
+              </div>
             </div>
           </div>
         ) : (
-          <>
-            <div className="w-16 h-16 rounded-full bg-[var(--acc-light)] text-[var(--acc)] flex items-center justify-center mx-auto mb-5 group-hover:scale-110 transition-transform duration-300">
-              <UploadCloud size={32} />
+          <div className="p-10 flex flex-col items-center text-center">
+            <div className="w-12 h-12 rounded-xl bg-[var(--surface2)] text-[var(--text3)] flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
+              <UploadCloud size={22} strokeWidth={1.5} />
             </div>
-            <h3 className="text-base font-semibold text-[var(--text)] mb-2">
-              {isDragActive ? 'Thả file vào đây...' : 'Kéo thả file vào đây'}
-            </h3>
-            <p className="text-[var(--text3)] text-xs mb-6">hoặc click để chọn file từ máy tính</p>
-            
-            <div className="flex items-center justify-center gap-4 text-[var(--text4)] text-xs">
-              <div className="flex items-center gap-1.5 bg-[var(--surface2)] px-3 py-1.5 rounded-md">
-                <FileText size={14} className="text-red-400" />
-                <span>.PDF</span>
+            <p className="text-[14px] font-semibold text-[var(--text)] mb-1">
+              {isDragActive ? 'Thả file vào đây' : 'Chọn hoặc kéo thả file'}
+            </p>
+            <p className="text-[12.5px] text-[var(--text3)] mb-6">PDF, Excel, CSV — tối đa 1 file</p>
+            <div className="flex items-center gap-2.5 text-[var(--text4)] text-[11.5px]">
+              <div className="flex items-center gap-1.5 bg-[var(--surface2)] px-2.5 py-1 rounded-md">
+                <FileText size={12} className="text-red-400" />
+                <span className="text-[var(--text3)]">.PDF</span>
               </div>
-              <div className="flex items-center gap-1.5 bg-[var(--surface2)] px-3 py-1.5 rounded-md">
-                <FileSpreadsheet size={14} className="text-green-500" />
-                <span>.XLSX, .CSV</span>
+              <div className="flex items-center gap-1.5 bg-[var(--surface2)] px-2.5 py-1 rounded-md">
+                <FileSpreadsheet size={12} className="text-emerald-500" />
+                <span className="text-[var(--text3)]">.XLSX &nbsp;&middot;&nbsp; .CSV</span>
               </div>
             </div>
-          </>
+          </div>
         )}
       </div>
+
+      <p className="mt-4 text-[11.5px] text-[var(--text4)] leading-relaxed">
+        Dữ liệu được lưu trữ an toàn trên hệ thống. Không chia sẻ với bên thứ ba.
+      </p>
     </div>
   );
 }

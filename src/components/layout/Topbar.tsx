@@ -25,10 +25,8 @@ export default function Topbar() {
 
   return (
     <header className="sticky top-0 z-40 flex items-center justify-between gap-4 py-3.5 border-b border-[var(--border)] mb-5 flex-wrap bg-[var(--bg)]">
-      <div className="flex items-center gap-1.5 text-[13px] font-medium text-[var(--text3)]">
-        <span>Trang chủ</span>
-        <ChevronRight size={14} className="text-[var(--text4)]" />
-        <span className="text-[var(--text)] font-semibold">Quotation Checker</span>
+      <div className="flex items-center gap-2 text-[13px] text-[var(--text2)]">
+        <span className="text-[var(--text3)] text-xs">Hôm nay, {new Date().toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
       </div>
 
       <div className="flex items-center gap-2">
