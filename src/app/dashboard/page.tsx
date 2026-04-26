@@ -71,7 +71,7 @@ export default async function DashboardHome() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {projects.map(project => (
-            <div key={project.id} className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-5 transition-colors hover:border-[var(--acc)] hover:shadow-sm">
+            <div key={project.id} className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-5 card-hover">
               <h3 className="font-bold text-[13.5px] text-[var(--text)] mb-3">{project.name}</h3>
               <div className="flex flex-col gap-1.5">
                 {project.quotations.map(q => (

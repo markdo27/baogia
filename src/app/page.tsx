@@ -5,11 +5,49 @@ import { useState, useCallback, useRef } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useRouter } from 'next/navigation';
 
-const STAGES = [
-  { until: 30, msg: 'Đang đọc cấu trúc file...' },
-  { until: 70, msg: 'AI đang nhận diện hạng mục...' },
-  { until: 96, msg: 'Đang hoàn thiện và kiểm tra...' },
+const SEGMENTS = [
+  { label: 'Đọc file',      from: 0,  to: 33 },
+  { label: 'AI phân tích',  from: 33, to: 66 },
+  { label: 'Hoàn thiện',    from: 66, to: 100 },
 ];
+
+function SegmentedProgress({ progress }: { progress: number }) {
+  return (
+    <div className="w-full flex flex-col gap-2">
+      <div className="flex gap-1.5">
+        {SEGMENTS.map((seg, i) => {
+          const segProgress = Math.min(100, Math.max(0, ((progress - seg.from) / (seg.to - seg.from)) * 100));
+          const isActive = progress >= seg.from && progress < seg.to;
+          const isDone   = progress >= seg.to;
+          return (
+            <div key={i} className="flex-1 flex flex-col gap-1.5">
+              <div className="h-1 bg-[var(--surface2)] rounded-full overflow-hidden">
+                <div
+                  className="h-full rounded-full transition-all duration-700 ease-out"
+                  style={{
+                    width: `${segProgress}%`,
+                    background: isDone ? 'var(--grn)' : 'var(--acc)',
+                  }}
+                />
+              </div>
+              <span className={`text-[10.5px] font-semibold transition-colors ${
+                isDone   ? 'text-[var(--grn)]' :
+                isActive ? 'text-[var(--acc)]' :
+                           'text-[var(--text4)]'
+              }`}>
+                {isDone ? '✓ ' : ''}{seg.label}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+      <div className="flex justify-between text-[11px] text-[var(--text3)]">
+        <span>Thường mất 30–90 giây với file PDF</span>
+        <span className="font-semibold tabular-nums text-[var(--text)]">{Math.round(progress)}%</span>
+      </div>
+    </div>
+  );
+}
 
 export default function Home() {
   const router = useRouter();
@@ -25,15 +63,15 @@ export default function Home() {
     setIsUploading(true);
     setProgress(0);
     progressRef.current = 0;
-    setUploadStatus(STAGES[0].msg);
+    setUploadStatus(SEGMENTS[0].label);
 
     const progressInterval = setInterval(() => {
       const prev = progressRef.current;
       const next = prev >= 95 ? 95 : prev + (prev < 50 ? 5 : prev < 80 ? 2 : 0.5);
       progressRef.current = next;
       setProgress(next);
-      const stage = STAGES.find(s => next < s.until) ?? STAGES[STAGES.length - 1];
-      setUploadStatus(stage.msg);
+      const seg = SEGMENTS.find(s => next >= s.from && next < s.to);
+      if (seg) setUploadStatus(seg.label);
     }, 1000);
 
     const formData = new FormData();
@@ -46,12 +84,12 @@ export default function Home() {
 
       clearInterval(progressInterval);
       setProgress(100);
-      setUploadStatus('Trích xuất thành công! Đang chuyển hướng...');
+      setUploadStatus('Trích xuất thành công!');
 
       sessionStorage.setItem('pendingExtraction', JSON.stringify(result.data));
       sessionStorage.setItem('pendingFilename', file.name);
 
-      setTimeout(() => router.push('/dashboard/review'), 500);
+      setTimeout(() => router.push('/dashboard/review'), 600);
     } catch (err: any) {
       clearInterval(progressInterval);
       alert('Lỗi: ' + err.message);
@@ -76,40 +114,50 @@ export default function Home() {
 
   return (
     <div className="flex-1 flex flex-col pt-8 max-w-2xl">
-      <div className="mb-8">
-        <h1 className="text-[22px] font-bold tracking-[-0.02em] text-[var(--text)] mb-1.5">Tải lên bảng báo giá</h1>
-        <p className="text-[var(--text3)] text-[13.5px] leading-relaxed">
-          Hệ thống sẽ đọc file của bạn, trích xuất toàn bộ hạng mục và đối chiếu giá thị trường bằng AI — không cần nhập tay.
+
+      {/* — Value first — */}
+      <div className="mb-7">
+        <h1 className="text-[22px] font-bold tracking-[-0.02em] text-[var(--text)] mb-1">Kiểm toán báo giá bằng AI</h1>
+        <p className="text-[13.5px] text-[var(--text3)] leading-relaxed mb-6">
+          Tải lên file báo giá — AI tự động trích xuất, đối chiếu giá thị trường và tính toán tiết kiệm tiềm năng.
         </p>
+
+        {/* 3-step flow — value before action */}
+        <div className="grid grid-cols-3 gap-4">
+          {[
+            { step: '01', title: 'AI đọc & trích xuất', desc: 'Mọi hạng mục, đơn giá và thương hiệu được nhận diện tự động.' },
+            { step: '02', title: 'So sánh giá thị trường', desc: 'AI tra giá thực tế từ Shopee, Lazada và các nguồn trực tuyến.' },
+            { step: '03', title: 'Đàm phán & báo cáo', desc: 'Ghi nhận giá đã chốt, theo dõi tiết kiệm và xuất báo cáo.' },
+          ].map(item => (
+            <div key={item.step} className="flex gap-3">
+              <span className="text-[11px] font-bold text-[var(--acc)] tabular-nums mt-0.5 shrink-0">{item.step}</span>
+              <div>
+                <p className="text-[13px] font-semibold text-[var(--text)] mb-0.5 leading-snug">{item.title}</p>
+                <p className="text-[11.5px] text-[var(--text3)] leading-relaxed">{item.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
+      {/* — Dropzone — action after value — */}
       <div
         {...getRootProps()}
         className={`w-full bg-[var(--surface)] border rounded-xl transition-all duration-150
-          ${isDragActive ? 'border-[var(--acc)] bg-[var(--acc-light)] shadow-[0_0_0_4px_var(--acc-ring)]'
+          ${isDragActive
+            ? 'border-[var(--acc)] bg-[var(--acc-light)] shadow-[0_0_0_4px_var(--acc-ring)]'
             : 'border-[var(--border)] hover:border-[var(--acc)] hover:shadow-[0_0_0_3px_var(--acc-ring)]'}
-          ${isUploading ? 'opacity-80 cursor-not-allowed pointer-events-none' : 'cursor-pointer'}`}
+          ${isUploading ? 'opacity-90 cursor-not-allowed pointer-events-none' : 'cursor-pointer'}`}
       >
         <input {...getInputProps()} />
 
         {isUploading ? (
-          <div className="flex flex-col items-start p-7 gap-4">
+          <div className="flex flex-col items-start p-7 gap-5">
             <div className="flex items-center gap-3">
-              <Loader2 size={18} className="text-[var(--acc)] animate-spin shrink-0" />
-              <p className="text-[13.5px] text-[var(--text)] font-medium">{uploadStatus}</p>
+              <Loader2 size={16} className="text-[var(--acc)] animate-spin shrink-0" />
+              <p className="text-[13px] text-[var(--text)] font-semibold">{uploadStatus}</p>
             </div>
-            <div className="w-full">
-              <div className="w-full h-1.5 bg-[var(--surface2)] rounded-full overflow-hidden mb-2">
-                <div
-                  className="h-full bg-[var(--acc)] rounded-full transition-all duration-700 ease-out"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
-              <div className="flex justify-between text-[11.5px] text-[var(--text3)]">
-                <span>Thường mất 30–90 giây với file PDF</span>
-                <span className="font-medium tabular-nums">{Math.round(progress)}%</span>
-              </div>
-            </div>
+            <SegmentedProgress progress={progress} />
           </div>
         ) : (
           <div className="p-10 flex flex-col items-center text-center">
@@ -137,26 +185,7 @@ export default function Home() {
         )}
       </div>
 
-      {/* 3-step outcome preview */}
-      {!isUploading && (
-        <div className="mt-8 grid grid-cols-3 gap-6 border-t border-[var(--border-subtle)] pt-7">
-          {[
-            { step: '01', title: 'AI đọc & trích xuất', desc: 'Mọi hạng mục, đơn giá và thương hiệu được nhận diện tự động.' },
-            { step: '02', title: 'So sánh giá thị trường', desc: 'AI tra giá thực tế từ Shopee, Lazada và các nguồn trực tuyến.' },
-            { step: '03', title: 'Đàm phán & báo cáo', desc: 'Ghi nhận giá đã chốt, theo dõi tiết kiệm và xuất báo cáo.' },
-          ].map(item => (
-            <div key={item.step} className="flex gap-3">
-              <span className="text-[11px] font-bold text-[var(--acc)] tabular-nums mt-0.5 shrink-0">{item.step}</span>
-              <div>
-                <p className="text-[13px] font-semibold text-[var(--text)] mb-1 leading-snug">{item.title}</p>
-                <p className="text-[12px] text-[var(--text3)] leading-relaxed">{item.desc}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      <p className="mt-6 text-[11.5px] text-[var(--text4)]">
+      <p className="mt-5 text-[11.5px] text-[var(--text4)]">
         Dữ liệu được lưu trữ an toàn. Không chia sẻ với bên thứ ba.
       </p>
     </div>

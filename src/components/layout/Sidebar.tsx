@@ -6,7 +6,6 @@ import {
   Hammer, 
   DoorClosed, 
   Sofa,
-  ChevronLeft,
   TrendingUp
 } from 'lucide-react';
 import Link from 'next/link';
@@ -36,15 +35,12 @@ export default function Sidebar() {
   ];
 
   return (
-    <aside className="fixed left-0 top-0 bottom-0 w-[232px] bg-[var(--surface)] border-r border-[var(--border)] flex flex-col z-50 transition-all duration-200">
+    <aside className="fixed left-0 top-0 bottom-0 w-[232px] bg-white/80 backdrop-blur-sm border-r border-[var(--border)] flex flex-col z-50">
       <div className="px-4 py-4 border-b border-[var(--border-subtle)]">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center">
           <span className="text-[15px] font-extrabold tracking-[-0.03em] text-[var(--text)] select-none">
             Price<span className="text-[var(--acc)]">Audit</span>
           </span>
-          <button className="w-[24px] h-[24px] flex items-center justify-center rounded-md text-[var(--text3)] hover:bg-[var(--surface2)] hover:text-[var(--text2)] transition-colors shrink-0">
-            <ChevronLeft size={14} />
-          </button>
         </div>
         <p className="text-[10.5px] text-[var(--text3)] mt-0.5 font-medium tracking-wide">AI Quotation Intelligence</p>
       </div>

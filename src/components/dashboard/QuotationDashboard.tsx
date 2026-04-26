@@ -145,29 +145,62 @@ export default function QuotationDashboard({ quotation }: { quotation: any }) {
         </button>
       </div>
 
-      {/* Metric Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-        {[
-          { label: 'Giá cao >20%', value: highPricedItems, sub: 'hạng mục', icon: AlertTriangle, color: 'red' },
-          { label: 'Tiết kiệm tiềm năng', value: fmtCompact(potentialSavings), sub: 'nếu đàm phán', icon: TrendingDown, color: 'grn' },
-          { label: 'Đã chốt / Tổng', value: `${agreedCount}/${totalItems}`, sub: 'tiến độ đàm phán', icon: CheckCircle, color: 'blue' },
-          { label: 'Tổng gốc', value: fmtCompact(originalTotal), sub: 'chưa đàm phán', icon: Wallet, color: 'blue' },
-          { label: 'Tổng sau đàm phán', value: fmtCompact(negotiatedTotal), sub: `còn ${totalItems - agreedCount} mục`, icon: Wallet, color: 'purple' },
-        ].map(card => (
-          <div key={card.label} className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-4 flex flex-col justify-between h-[100px] shadow-sm">
-            <div className="flex justify-between items-start">
-              <span className="text-[10.5px] font-semibold text-[var(--text3)] uppercase leading-tight max-w-[70%]">{card.label}</span>
-              <div className={`w-6 h-6 rounded-md bg-[var(--${card.color}-bg)] flex items-center justify-center text-[var(--${card.color})] shrink-0`}>
-                <card.icon size={13} />
+      {/* Metric Cards — 1 Audit Score + 4 supporting */}
+      {(() => {
+        const cleanItems = items.filter(i =>
+          i.status === 'agreed' ||
+          (i.marketPrice && i.unitPrice <= i.marketPrice * 1.2)
+        ).length;
+        const auditScore = totalItems > 0 ? Math.round((cleanItems / totalItems) * 100) : 0;
+        const scoreColor = auditScore >= 80 ? 'var(--score-great)' : auditScore >= 50 ? 'var(--score-warn)' : 'var(--score-danger)';
+        const scoreLabel = auditScore >= 80 ? 'Tốt' : auditScore >= 50 ? 'Cần xem xét' : 'Rủi ro cao';
+        const r = 30; const circ = 2 * Math.PI * r;
+        const filled = (auditScore / 100) * circ;
+        return (
+          <div className="grid grid-cols-5 gap-3">
+            {/* Audit Score — large left card */}
+            <div className="col-span-1 bg-[var(--surface)] border border-[var(--border)] rounded-xl p-4 flex flex-col items-center justify-center gap-2 card-hover">
+              <div className="relative w-[76px] h-[76px] shrink-0">
+                <svg viewBox="0 0 76 76" className="w-full h-full -rotate-90">
+                  <circle cx="38" cy="38" r={r} fill="none" stroke="var(--border)" strokeWidth="6" />
+                  <circle cx="38" cy="38" r={r} fill="none" stroke={scoreColor} strokeWidth="6"
+                    strokeDasharray={`${filled} ${circ}`} strokeLinecap="round"
+                    style={{ transition: 'stroke-dasharray 800ms cubic-bezier(0.4,0,0.2,1)' }}
+                  />
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <span className="text-[17px] font-bold leading-none" style={{ color: scoreColor }}>{auditScore}%</span>
+                </div>
+              </div>
+              <div className="text-center">
+                <p className="text-[11px] font-bold" style={{ color: scoreColor }}>{scoreLabel}</p>
+                <p className="text-[9.5px] text-[var(--text4)] font-medium uppercase tracking-wide mt-0.5">Audit Score</p>
               </div>
             </div>
-            <div>
-              <div className="text-[22px] font-bold text-[var(--text)] leading-none">{card.value}</div>
-              <div className="text-[10px] font-medium text-[var(--text3)] mt-1">{card.sub}</div>
-            </div>
+
+            {/* 4 supporting metrics */}
+            {[
+              { label: 'Giá cao >20%',         value: highPricedItems,            sub: 'hạng mục',         icon: AlertTriangle, color: 'red'    },
+              { label: 'Tiết kiệm tiềm năng',   value: fmtCompact(potentialSavings), sub: 'nếu đàm phán',  icon: TrendingDown,  color: 'grn'    },
+              { label: 'Tổng gốc',              value: fmtCompact(originalTotal),  sub: 'báo giá gốc',      icon: Wallet,        color: 'blue'   },
+              { label: 'Sau đàm phán',           value: fmtCompact(negotiatedTotal), sub: `${agreedCount}/${totalItems} đã chốt`, icon: CheckCircle, color: 'purple' },
+            ].map(card => (
+              <div key={card.label} className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-4 flex flex-col justify-between card-hover">
+                <div className="flex justify-between items-start mb-3">
+                  <span className="text-[10px] font-semibold text-[var(--text3)] uppercase tracking-wide leading-tight max-w-[75%]">{card.label}</span>
+                  <div className={`w-6 h-6 rounded-md bg-[var(--${card.color}-bg)] flex items-center justify-center text-[var(--${card.color})] shrink-0`}>
+                    <card.icon size={12} />
+                  </div>
+                </div>
+                <div>
+                  <div className="text-[20px] font-bold text-[var(--text)] leading-none tabular-nums">{card.value}</div>
+                  <div className="text-[10px] font-medium text-[var(--text3)] mt-1">{card.sub}</div>
+                </div>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        );
+      })()}
 
       {/* Main Table */}
       <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl shadow-sm overflow-hidden flex flex-col">
@@ -220,17 +253,28 @@ export default function QuotationDashboard({ quotation }: { quotation: any }) {
         <div className="overflow-auto max-h-[720px]">
           <table className="w-full text-left border-collapse text-[12px]">
             <thead className="bg-[var(--surface2)] sticky top-0 z-10 border-b border-[var(--border)]">
+              {/* Group labels */}
+              <tr className="border-b border-[var(--border-subtle)]">
+                <th colSpan={3} className="py-1 px-3 text-[9px] font-bold text-[var(--text4)] uppercase tracking-widest border-r border-[var(--border)]">Thông tin</th>
+                <th colSpan={4} className="py-1 px-3 text-[9px] font-bold text-[var(--text4)] uppercase tracking-widest border-r border-[var(--border)]">Dữ liệu AI</th>
+                <th colSpan={3} className="py-1 px-3 text-[9px] font-bold text-[var(--acc)] uppercase tracking-widest" style={{ background: 'var(--action-band)' }}>Khu vực đàm phán ✎</th>
+                <th className="py-1 px-3" />
+              </tr>
+              {/* Column headers */}
               <tr>
+                {/* GROUP A */}
                 <th className="py-2.5 px-3 font-semibold text-[10px] text-[var(--text3)] uppercase">Hạng mục</th>
                 <th className="py-2.5 px-3 font-semibold text-[10px] text-[var(--text3)] uppercase w-20 text-center">Thương hiệu</th>
-                <th className="py-2.5 px-3 font-semibold text-[10px] text-[var(--text3)] uppercase w-20 text-center">ĐVT / SL</th>
+                <th className="py-2.5 px-3 font-semibold text-[10px] text-[var(--text3)] uppercase w-20 text-center border-r border-[var(--border)]">ĐVT / SL</th>
+                {/* GROUP B */}
                 <th className="py-2.5 px-3 font-semibold text-[10px] text-[var(--text3)] uppercase w-24 text-right">Đơn giá báo</th>
                 <th className="py-2.5 px-3 font-semibold text-[10px] text-[var(--text3)] uppercase w-32 text-right">Giá thị trường</th>
                 <th className="py-2.5 px-3 font-semibold text-[10px] text-[var(--text3)] uppercase w-24 text-right">Tiết kiệm</th>
-                <th className="py-2.5 px-3 font-semibold text-[10px] text-[var(--text3)] uppercase w-28 text-right">Thành tiền</th>
-                <th className="py-2.5 px-3 font-semibold text-[10px] text-[var(--text3)] uppercase w-28 text-right">Giá đàm phán</th>
-                <th className="py-2.5 px-3 font-semibold text-[10px] text-[var(--text3)] uppercase w-36 text-center">Trạng thái</th>
-                <th className="py-2.5 px-3 font-semibold text-[10px] text-[var(--text3)] uppercase w-28">Ghi chú</th>
+                <th className="py-2.5 px-3 font-semibold text-[10px] text-[var(--text3)] uppercase w-28 text-right border-r border-[var(--border)]">Thành tiền</th>
+                {/* GROUP C — action zone */}
+                <th className="py-2.5 px-3 font-semibold text-[10px] text-[var(--acc)] uppercase w-28 text-right" style={{ background: 'var(--action-band)' }}>Giá đàm phán</th>
+                <th className="py-2.5 px-3 font-semibold text-[10px] text-[var(--acc)] uppercase w-36 text-center" style={{ background: 'var(--action-band)' }}>Trạng thái</th>
+                <th className="py-2.5 px-3 font-semibold text-[10px] text-[var(--acc)] uppercase w-28" style={{ background: 'var(--action-band)' }}>Ghi chú</th>
                 <th className="py-2.5 px-3 font-semibold text-[10px] text-[var(--text3)] uppercase w-20 text-center">Khảo giá</th>
               </tr>
             </thead>
@@ -290,8 +334,8 @@ export default function QuotationDashboard({ quotation }: { quotation: any }) {
                               : <span className="text-[var(--text4)]">—</span>}
                           </td>
 
-                          {/* Unit / Qty */}
-                          <td className="py-2.5 px-3 text-center">
+                          {/* Unit / Qty — last of Group A */}
+                          <td className="py-2.5 px-3 text-center border-r border-[var(--border-subtle)]">
                             <div className="text-[10px] text-[var(--text3)] font-medium">{item.unit}</div>
                             <div className="text-[11px] font-bold text-[var(--blue)]">×{item.quantity}</div>
                           </td>
@@ -344,14 +388,14 @@ export default function QuotationDashboard({ quotation }: { quotation: any }) {
                             {savings > 0 ? fmt(savings) : <span className="text-[var(--text4)]">—</span>}
                           </td>
 
-                          {/* Total */}
-                          <td className="py-2.5 px-3 text-right font-bold text-[var(--blue)]">{fmt(item.totalPrice)}</td>
+                          {/* Total — last of Group B */}
+                          <td className="py-2.5 px-3 text-right font-bold text-[var(--blue)] border-r border-[var(--border-subtle)]">{fmt(item.totalPrice)}</td>
 
-                          {/* Negotiated price input */}
-                          <td className="py-2.5 px-3">
+                          {/* Negotiated price input — Group C */}
+                          <td className="py-2.5 px-3" style={{ background: 'var(--action-band)' }}>
                             <input
                               type="text"
-                              className="w-full bg-[var(--surface)] border border-[var(--border)] rounded px-2 py-1 text-right text-[11px] font-bold text-[var(--text)] focus:border-[var(--acc)] outline-none"
+                              className="w-full bg-[var(--surface)] border border-[var(--border)] rounded px-2 py-1 text-right text-[11px] font-bold text-[var(--text)] focus:border-[var(--acc)] focus:shadow-[0_0_0_2px_var(--acc-ring)] outline-none transition-all"
                               placeholder="Nhập giá..."
                               defaultValue={item.agreedPrice ? fmt(item.agreedPrice) : ''}
                               onBlur={e => {
@@ -361,16 +405,16 @@ export default function QuotationDashboard({ quotation }: { quotation: any }) {
                             />
                           </td>
 
-                          {/* Status toggle */}
-                          <td className="py-2.5 px-3">
+                          {/* Status toggle — Group C */}
+                          <td className="py-2.5 px-3" style={{ background: 'var(--action-band)' }}>
                             <StatusToggle
                               value={item.status as StatusKey}
                               onChange={v => handleUpdate(item.id, { status: v })}
                             />
                           </td>
 
-                          {/* Note */}
-                          <td className="py-2.5 px-3">
+                          {/* Note — Group C */}
+                          <td className="py-2.5 px-3" style={{ background: 'var(--action-band)' }}>
                             <input
                               type="text"
                               className="w-full bg-transparent border-b border-transparent hover:border-[var(--border)] focus:border-[var(--acc)] px-1 py-1 text-[11px] text-[var(--text2)] outline-none transition-colors"

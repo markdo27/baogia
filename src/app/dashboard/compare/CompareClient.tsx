@@ -176,7 +176,14 @@ export default function CompareClient({
                   const rowWinner = diff < 0 ? 'q1' : diff > 0 ? 'q2' : 'tie';
 
                   return (
-                    <tr key={idx} className="border-b border-[var(--border-subtle)] hover:bg-[var(--surface2)] group">
+                    <tr
+                      key={idx}
+                      className="border-b border-[var(--border-subtle)] hover:bg-[var(--surface2)] group"
+                      style={{
+                        animation: 'row-reveal 200ms ease-out both',
+                        animationDelay: `${idx * 20}ms`,
+                      }}
+                    >
                       <td className="py-3 px-4">
                         <div className="font-medium text-[var(--text)] leading-snug">{match.name}</div>
                         {match.category && <div className="text-[10px] text-[var(--text3)] mt-0.5">{match.category}</div>}
