@@ -308,6 +308,7 @@ function render() {
         + '<a class="buy-btn btn-google" href="' + googleUrl(it.name, it.brand) + '" target="_blank">Google</a>'
         + '</div></td>'
         + '</tr>';
+    }); // end items.forEach
 
     var secSaving = items.reduce(function(s,it){ return s + it.saving; }, 0);
     var secHigh  = items.filter(function(it){ return it.overPct > 20; }).length;
