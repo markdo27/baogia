@@ -20,16 +20,17 @@ export default function ReviewExtractionPage() {
   const [confirmingSave, setConfirmingSave] = useState(false);
   const [deletingIdx, setDeletingIdx] = useState<number | null>(null);
   const [hintVisible, setHintVisible] = useState(true);
+  const [fallbackMeta, setFallbackMeta] = useState<{ warning?: string; pipeline?: string } | null>(null);
   const confirmTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const deleteTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const deleteTimer  = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    const stored = sessionStorage.getItem('pendingExtraction');
+    const stored   = sessionStorage.getItem('pendingExtraction');
     const filename = sessionStorage.getItem('pendingFilename');
-    if (stored) {
-      try { setItems(JSON.parse(stored)); } catch {}
-    }
+    const meta     = sessionStorage.getItem('pendingMeta');
+    if (stored)   { try { setItems(JSON.parse(stored)); }    catch {} }
     if (filename) setQuotationName(cleanFilename(filename));
+    if (meta)     { try { setFallbackMeta(JSON.parse(meta)); } catch {} }
   }, []);
 
   const handleFieldChange = (index: number, field: string, value: string | number) => {

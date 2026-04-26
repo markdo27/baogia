@@ -88,6 +88,7 @@ export default function Home() {
 
       sessionStorage.setItem('pendingExtraction', JSON.stringify(result.data));
       sessionStorage.setItem('pendingFilename', file.name);
+      if (result._meta) sessionStorage.setItem('pendingMeta', JSON.stringify(result._meta));
 
       setTimeout(() => router.push('/dashboard/review'), 600);
     } catch (err: any) {
