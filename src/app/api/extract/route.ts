@@ -27,7 +27,7 @@ export async function POST(req: Request) {
     // 1. Extract Raw Text based on file type
     if (file.name.endsWith('.pdf')) {
       extractedText = await new Promise((resolve, reject) => {
-        const pdfParser = new PDFParser(this, 1);
+        const pdfParser = new PDFParser(null, true);
         
         pdfParser.on("pdfParser_dataError", (errData: any) => reject(errData.parserError));
         pdfParser.on("pdfParser_dataReady", (pdfData: any) => {

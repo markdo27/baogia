@@ -209,7 +209,7 @@ export default function QuotationDashboard({ quotation }: { quotation: any }) {
             <tbody>
               {Object.keys(groupedItems).map(catName => {
                 const catItems = groupedItems[catName];
-                const catTotal = catItems.reduce((sum, i) => sum + i.totalPrice, 0);
+                const catTotal = catItems.reduce((sum: number, i: any) => sum + i.totalPrice, 0);
 
                 return (
                   <React.Fragment key={catName}>
@@ -227,7 +227,7 @@ export default function QuotationDashboard({ quotation }: { quotation: any }) {
                     </tr>
 
                     {/* Items */}
-                    {catItems.map((item) => {
+                    {catItems.map((item: any) => {
                       const diff = item.marketPrice ? item.unitPrice - item.marketPrice : null;
                       const isOverpriced = diff && diff > 0;
                       const savings = (isOverpriced && diff) ? diff * item.quantity : 0;
