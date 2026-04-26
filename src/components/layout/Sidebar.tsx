@@ -6,7 +6,8 @@ import {
   Hammer, 
   DoorClosed, 
   Sofa,
-  ChevronLeft
+  ChevronLeft,
+  TrendingUp
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
@@ -17,8 +18,9 @@ export default function Sidebar() {
   const currentCategory = searchParams.get('category');
 
   const mainNav = [
-    { name: 'Tất cả Báo giá', href: '/dashboard', icon: LayoutGrid },
-    { name: 'So sánh Báo giá', href: '/dashboard/compare', icon: LayoutGrid },
+    { name: 'Tất cả Báo giá',    href: '/dashboard',             icon: LayoutGrid  },
+    { name: 'So sánh Báo giá',   href: '/dashboard/compare',     icon: LayoutGrid  },
+    { name: 'Chỉ số giá CĐ',     href: '/dashboard/price-index', icon: TrendingUp  },
   ];
 
   // Base path for category filtering. If we are viewing a specific quotation, filter it.

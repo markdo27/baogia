@@ -66,8 +66,20 @@ model ItemEvent {
   id        String   @id @default(uuid())
   itemId    String
   item      LineItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
-  field     String   // 'status', 'agreedPrice', 'note'
+  field     String
   oldValue  String?
   newValue  String?
   createdAt DateTime @default(now())
+}
+
+// Phase 3: Crowdsourced price index — fully anonymized contributions
+model PriceContribution {
+  id           String   @id @default(uuid())
+  category     String   // e.g. "I. Điện - Nước"
+  itemKeyword  String   // normalized item name (first 3 words, lowercased)
+  unit         String?
+  confirmedPrice Float  // the agreed/negotiated price per unit
+  month        Int
+  year         Int
+  createdAt    DateTime @default(now())
 }

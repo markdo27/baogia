@@ -120,3 +120,9 @@
     transform: translateX(100%);
   }
 }
+
+@media print {
+  aside, header { display: none !important; }
+  main { margin-left: 0 !important; padding: 0 !important; }
+  .no-print { display: none !important; }
+}

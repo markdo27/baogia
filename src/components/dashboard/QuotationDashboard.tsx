@@ -35,6 +35,7 @@ export default function QuotationDashboard({ quotation }: { quotation: any }) {
   const [loadingItems, setLoadingItems] = useState<Record<string, boolean>>({});
   const [batchLoading, setBatchLoading] = useState(false);
   const [expandedHistoryId, setExpandedHistoryId] = useState<string | null>(null);
+  const [contributeToast, setContributeToast] = useState<{ itemId: string; itemName: string } | null>(null);
 
   const searchParams = useSearchParams();
   const categoryFilter = searchParams.get('category');
@@ -71,11 +72,27 @@ export default function QuotationDashboard({ quotation }: { quotation: any }) {
 
   const handleUpdate = async (id: string, updates: any) => {
     setItems(prev => prev.map(i => i.id === id ? { ...i, ...updates } : i));
+    // Show contribution toast when item is marked agreed
+    if (updates.status === 'agreed') {
+      const item = items.find(i => i.id === id);
+      if (item) setContributeToast({ itemId: id, itemName: item.name });
+    }
     try {
       await fetch('/api/items/update', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, ...updates }),
+      });
+    } catch (e) { console.error(e); }
+  };
+
+  const submitContribution = async (itemId: string) => {
+    setContributeToast(null);
+    try {
+      await fetch('/api/contribute', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ itemId }),
       });
     } catch (e) { console.error(e); }
   };
@@ -115,7 +132,7 @@ export default function QuotationDashboard({ quotation }: { quotation: any }) {
   };
 
   return (
-    <div className="flex flex-col gap-5 pt-2 pb-10">
+    <div className="flex flex-col gap-5 pt-2 pb-10 relative">
 
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -415,6 +432,33 @@ export default function QuotationDashboard({ quotation }: { quotation: any }) {
           </table>
         </div>
       </div>
+
+      {/* Contribution toast */}
+      {contributeToast && (
+        <div className="fixed bottom-5 right-5 z-50 bg-[var(--surface)] border border-[var(--border)] rounded-xl shadow-lg p-4 flex flex-col gap-2.5 w-72">
+          <div>
+            <p className="text-[13px] font-bold text-[var(--text)] mb-0.5">✅ Đã chốt hợp đồng!</p>
+            <p className="text-[11.5px] text-[var(--text3)] leading-relaxed">
+              Đóng góp giá <strong className="text-[var(--text)]">{contributeToast.itemName}</strong> vào cơ sở dữ liệu cộng đồng ẩn danh?
+            </p>
+          </div>
+          <p className="text-[10.5px] text-[var(--text4)]">Dữ liệu hoàn toàn ẩn danh, không liên kết với tên bạn hoặc nhà thầu.</p>
+          <div className="flex gap-2 mt-0.5">
+            <button
+              onClick={() => submitContribution(contributeToast.itemId)}
+              className="flex-1 py-1.5 bg-[var(--acc)] text-white text-[12px] font-semibold rounded-md hover:opacity-90 transition-opacity"
+            >
+              Đóng góp ẩn danh
+            </button>
+            <button
+              onClick={() => setContributeToast(null)}
+              className="px-3 py-1.5 border border-[var(--border)] text-[12px] font-semibold text-[var(--text3)] rounded-md hover:border-[var(--text)] transition-colors"
+            >
+              Bỏ qua
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
