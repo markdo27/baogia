@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Printer, AlertTriangle, TrendingDown, CheckCircle, Wallet, Search, Loader2, Zap } from 'lucide-react';
+import { Printer, AlertTriangle, TrendingDown, CheckCircle, Wallet, Search, Loader2, Zap, Trash2 } from 'lucide-react';
 
 const STATUS_CONFIG = {
   pending:     { label: 'Chưa chốt',   active: 'bg-[var(--surface2)] text-[var(--text2)] border-[var(--border)]' },
@@ -36,6 +36,7 @@ export default function QuotationDashboard({ quotation }: { quotation: any }) {
   const [batchLoading, setBatchLoading] = useState(false);
   const [expandedHistoryId, setExpandedHistoryId] = useState<string | null>(null);
   const [contributeToast, setContributeToast] = useState<{ itemId: string; itemName: string } | null>(null);
+  const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
 
   const searchParams = useSearchParams();
   const categoryFilter = searchParams.get('category');
@@ -93,6 +94,25 @@ export default function QuotationDashboard({ quotation }: { quotation: any }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ itemId }),
+      });
+    } catch (e) { console.error(e); }
+  };
+
+  const handleDeleteItem = async (id: string) => {
+    if (deletingItemId !== id) {
+      // First click: arm the delete
+      setDeletingItemId(id);
+      setTimeout(() => setDeletingItemId(prev => prev === id ? null : prev), 3000);
+      return;
+    }
+    // Second click: commit
+    setDeletingItemId(null);
+    setItems(prev => prev.filter(i => i.id !== id));
+    try {
+      await fetch('/api/items/delete', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
       });
     } catch (e) { console.error(e); }
   };
@@ -259,6 +279,7 @@ export default function QuotationDashboard({ quotation }: { quotation: any }) {
                 <th colSpan={4} className="py-1 px-3 text-[9px] font-bold text-[var(--text4)] uppercase tracking-widest border-r border-[var(--border)]">Dữ liệu AI</th>
                 <th colSpan={3} className="py-1 px-3 text-[9px] font-bold text-[var(--acc)] uppercase tracking-widest" style={{ background: 'var(--action-band)' }}>Khu vực đàm phán ✎</th>
                 <th className="py-1 px-3" />
+                <th className="py-1 px-3" />
               </tr>
               {/* Column headers */}
               <tr>
@@ -276,6 +297,7 @@ export default function QuotationDashboard({ quotation }: { quotation: any }) {
                 <th className="py-2.5 px-3 font-semibold text-[10px] text-[var(--acc)] uppercase w-36 text-center" style={{ background: 'var(--action-band)' }}>Trạng thái</th>
                 <th className="py-2.5 px-3 font-semibold text-[10px] text-[var(--acc)] uppercase w-28" style={{ background: 'var(--action-band)' }}>Ghi chú</th>
                 <th className="py-2.5 px-3 font-semibold text-[10px] text-[var(--text3)] uppercase w-20 text-center">Khảo giá</th>
+                <th className="py-2.5 px-3 w-12" />
               </tr>
             </thead>
             <tbody>
@@ -424,7 +446,7 @@ export default function QuotationDashboard({ quotation }: { quotation: any }) {
                             />
                           </td>
 
-                          {/* Search links — always visible at 40% */}
+                          {/* Search links */}
                           <td className="py-2.5 px-3 text-center">
                             <div className="flex justify-center gap-1">
                               <a href={searchLink(item.name, item.brand, 'shopee')} target="_blank" rel="noopener" className="w-5 h-5 bg-[#EE4D2D] rounded flex items-center justify-center text-white opacity-40 hover:opacity-100 transition-opacity" title="Shopee">
@@ -437,6 +459,26 @@ export default function QuotationDashboard({ quotation }: { quotation: any }) {
                                 <Search size={9} />
                               </a>
                             </div>
+                          </td>
+
+                          {/* Delete */}
+                          <td className="py-2.5 px-2 text-center">
+                            {deletingItemId === item.id ? (
+                              <button
+                                onClick={() => handleDeleteItem(item.id)}
+                                className="text-[10.5px] font-bold text-white bg-[var(--red)] px-2 py-1 rounded-md hover:bg-red-600 transition-colors whitespace-nowrap"
+                              >
+                                Xóa?
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => handleDeleteItem(item.id)}
+                                className="opacity-0 group-hover:opacity-100 text-[var(--text4)] hover:text-[var(--red)] transition-all p-1.5 rounded-md hover:bg-[var(--red-bg)]"
+                                title="Xóa hạng mục"
+                              >
+                                <Trash2 size={13} />
+                              </button>
+                            )}
                           </td>
                         </tr>
 
