@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "skills": {
+    "fluxui-docs-pro": {
+      "source": "tompec/fluxui-docs-skill",
+      "sourceType": "github",
+      "computedHash": "0d75c10beb00dc91011d44f8af61c0e272f0e73840f5aeb5b579e71cb484427e"
+    }
+  }
+}

@@ -139,33 +139,63 @@ function googleUrl(name, brand) { return 'https://www.google.com/search?q=' + en
 function updateDashboard() {
   let highCount = 0;
   let potentialSavings = 0;
-  let agreedCount = 0;
+  let agreedCount = 0, negotiatingCount = 0, pendingCount = 0;
   let totalItems = 0;
   let customTotal = 0;
   let savedTotal = 0;
 
-  DATA.forEach(sec => {
-    sec.items.forEach(it => {
+  DATA.forEach(function(sec) {
+    sec.items.forEach(function(it) {
       totalItems++;
-      let status = getLocal(it.id, 'status', 'pending');
-      let customP = parseFloat(getLocal(it.id, 'price', it.dg));
+      var status = getLocal(it.id, 'status', 'pending');
+      var customP = parseFloat(getLocal(it.id, 'price', it.dg));
       if (isNaN(customP)) customP = it.dg;
 
-      if (it.overPct > 10) highCount++;
+      if (it.overPct > 20) highCount++;
       potentialSavings += it.saving;
 
       if (status === 'agreed') agreedCount++;
+      else if (status === 'negotiating') negotiatingCount++;
+      else pendingCount++;
 
       customTotal += customP * it.sl;
       if (customP < it.dg) savedTotal += (it.dg - customP) * it.sl;
     });
   });
 
-  document.getElementById('highCount').textContent = highCount;
-  document.getElementById('potentialSavings').textContent = fmtShort(potentialSavings);
-  document.getElementById('agreedCount').textContent = agreedCount + ' / ' + totalItems;
-  document.getElementById('customTotal').textContent = fmtShort(customTotal);
-  document.getElementById('savedDisplay').textContent = fmtShort(savedTotal);
+  var hcEl = document.getElementById('highCount');
+  var psEl = document.getElementById('potentialSavings');
+  var acEl = document.getElementById('agreedCount');
+  var ctEl = document.getElementById('customTotal');
+  var sdEl = document.getElementById('savedDisplay');
+  var tiEl = document.getElementById('totalItems');
+
+  if (hcEl) hcEl.textContent = highCount;
+  if (psEl) psEl.textContent = fmtShort(potentialSavings);
+  if (acEl) acEl.textContent = agreedCount + ' / ' + totalItems;
+  if (ctEl) ctEl.textContent = fmtShort(customTotal);
+  if (sdEl) { sdEl.textContent = 'Tiết kiệm: ' + fmtShort(savedTotal); sdEl.className = 'ov-trend' + (savedTotal > 0 ? ' up' : ''); }
+  if (tiEl) tiEl.textContent = totalItems;
+
+  // Tab counts
+  var tabAll = document.getElementById('tab-all-count');
+  var tabAgreed = document.getElementById('tab-agreed-count');
+  var tabNeg = document.getElementById('tab-negotiating-count');
+  var tabPend = document.getElementById('tab-pending-count');
+  if (tabAll) tabAll.textContent = totalItems;
+  if (tabAgreed) tabAgreed.textContent = agreedCount;
+  if (tabNeg) tabNeg.textContent = negotiatingCount;
+  if (tabPend) tabPend.textContent = pendingCount;
+
+  // Sidebar status badges
+  var sbAll = document.getElementById('sb-all');
+  var sbAgreed = document.getElementById('sb-agreed');
+  var sbNeg = document.getElementById('sb-negotiating');
+  var sbPend = document.getElementById('sb-pending');
+  if (sbAll) sbAll.textContent = totalItems;
+  if (sbAgreed) sbAgreed.textContent = agreedCount;
+  if (sbNeg) sbNeg.textContent = negotiatingCount;
+  if (sbPend) sbPend.textContent = pendingCount;
 }
 
 // --- Theme ---
