@@ -9,6 +9,7 @@ import {
   ChevronLeft
 } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname, useSearchParams } from 'next/navigation';
 
 export default function Sidebar() {
@@ -36,11 +37,11 @@ export default function Sidebar() {
   return (
     <aside className="fixed left-0 top-0 bottom-0 w-[232px] bg-[var(--surface)] border-r border-[var(--border)] flex flex-col z-50 transition-all duration-200">
       <div className="flex items-center gap-2.5 p-4 border-b border-[var(--border-subtle)]">
-        <div className="w-[34px] h-[34px] rounded-lg bg-gradient-to-br from-[var(--acc)] to-[#A5B4FC] flex items-center justify-center shrink-0 shadow-[0_2px_8px_var(--acc-ring)]">
-          <svg width="18" height="18" viewBox="0 0 22 22" fill="none"><path d="M3 18L11 4l8 14H3z" fill="#fff" opacity=".9"/><path d="M7 18l4-8 4 8H7z" fill="#fff" opacity=".45"/></svg>
+        <div className="w-[34px] h-[34px] shrink-0 rounded-md overflow-hidden shadow-[0_2px_8px_var(--acc-ring)] border border-[var(--border-subtle)]">
+          <Image src="/logo.png" alt="Price Audit Logo" width={34} height={34} className="object-cover w-full h-full" />
         </div>
         <div className="text-[11.5px] text-[var(--text3)] leading-snug flex-1 truncate">
-          Quotation<strong className="block text-[13.5px] font-bold text-[var(--text)] tracking-tight">Checker</strong>
+          Price<strong className="block text-[13.5px] font-bold text-[var(--text)] tracking-tight">Audit</strong>
         </div>
         <button className="w-[26px] h-[26px] flex items-center justify-center rounded-md text-[var(--text3)] hover:bg-[var(--surface2)] hover:text-[var(--text2)] transition-colors shrink-0">
           <ChevronLeft size={16} />
