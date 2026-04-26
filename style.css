@@ -20,7 +20,75 @@
   --shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);
   --shadow-md:0 4px 16px rgba(0,0,0,.08);
 }
+/* ── THEME TOGGLE BUTTON ─────────────────────── */
+.theme-toggle{display:flex;align-items:center;justify-content:center;width:36px;height:36px;border:1px solid var(--border);border-radius:var(--rs);background:var(--white);cursor:pointer;font-size:16px;transition:.2s;flex-shrink:0;position:relative;overflow:hidden}
+.theme-toggle:hover{border-color:var(--acc);box-shadow:0 0 0 3px rgba(99,102,241,.1)}
+.theme-icon-sun,.theme-icon-moon{position:absolute;transition:opacity .25s,transform .25s}
+.theme-icon-moon{opacity:0;transform:rotate(90deg) scale(.7)}
+body.dark .theme-icon-sun{opacity:0;transform:rotate(-90deg) scale(.7)}
+body.dark .theme-icon-moon{opacity:1;transform:rotate(0deg) scale(1)}
+
+/* ── DARK MODE OVERRIDES ─────────────────────── */
+body.dark{
+  --bg:#0F1117;
+  --white:#1A1D2E;
+  --border:#2A2D3E;
+  --border-light:#1F2235;
+  --text:#E2E8F0;
+  --text2:#94A3B8;
+  --text3:#64748B;
+  --acc:#818CF8;
+  --acc-light:rgba(99,102,241,.12);
+  --acc-hover:#6366F1;
+  --red:#F87171;--red-light:rgba(239,68,68,.12);
+  --grn:#4ADE80;--grn-light:rgba(34,197,94,.1);
+  --ylw:#FCD34D;--ylw-light:rgba(245,158,11,.1);
+  --blue:#60A5FA;--blue-light:rgba(59,130,246,.1);
+  --purple:#A78BFA;--purple-light:rgba(139,92,246,.1);
+}
+body.dark .sidebar{background:#13162A;border-color:#2A2D3E}
+body.dark .sb-logo{border-color:#2A2D3E}
+body.dark .sb-section-label{color:#4A5568}
+body.dark .sb-item:hover{background:rgba(99,102,241,.12)}
+body.dark .sb-badge{background:#1F2235;color:#64748B}
+body.dark .sb-footer{border-color:#2A2D3E}
+body.dark .topbar{background:var(--bg);border-color:#2A2D3E}
+body.dark .topbar-search{background:#1A1D2E;border-color:#2A2D3E}
+body.dark .topbar-sort select{background:#1A1D2E;border-color:#2A2D3E;color:var(--text2)}
+body.dark .theme-toggle{background:#1A1D2E;border-color:#2A2D3E}
+body.dark .export-btn{background:#1A1D2E;border-color:#2A2D3E;color:var(--text2)}
+body.dark .ov-card{background:#1A1D2E;border-color:#2A2D3E}
+body.dark .content-card{background:#1A1D2E;border-color:#2A2D3E}
+body.dark .content-tabs{border-color:#2A2D3E}
+body.dark thead tr{background:#13162A}
+body.dark tbody tr:hover{background:rgba(255,255,255,.03)}
+body.dark tbody tr.row-agreed{background:rgba(34,197,94,.06)}
+body.dark tbody tr.row-agreed:hover{background:rgba(34,197,94,.1)}
+body.dark tbody tr.row-negotiating{background:rgba(245,158,11,.06)}
+body.dark tbody tr.row-negotiating:hover{background:rgba(245,158,11,.1)}
+body.dark .sec-head{background:#13162A;border-color:#2A2D3E}
+body.dark .sec-head:hover{background:#1a1f35}
+body.dark .td-custom input{background:#13162A;border-color:#2A2D3E;color:var(--text)}
+body.dark .td-custom input:focus{border-color:var(--acc);background:#1A1D2E}
+body.dark .td-status select{background:#13162A;border-color:#2A2D3E;color:var(--text2)}
+body.dark .td-status select.s-agreed{background:rgba(34,197,94,.1);border-color:rgba(74,222,128,.3);color:var(--grn)}
+body.dark .td-status select.s-negotiating{background:rgba(245,158,11,.1);border-color:rgba(252,211,77,.3);color:var(--ylw)}
+body.dark .td-note-cell input{color:var(--text2);border-color:#2A2D3E}
+body.dark .td-note-cell input:focus{color:var(--text)}
+body.dark .sec-badge.I{background:rgba(99,102,241,.15);color:#818CF8;border-color:rgba(99,102,241,.3)}
+body.dark .sec-badge.II{background:rgba(34,197,94,.12);color:#4ADE80;border-color:rgba(34,197,94,.25)}
+body.dark .sec-badge.III{background:rgba(234,88,12,.12);color:#FB923C;border-color:rgba(234,88,12,.25)}
+body.dark .sec-badge.IV{background:rgba(167,139,250,.12);color:#A78BFA;border-color:rgba(167,139,250,.25)}
+body.dark .sec-saving{background:rgba(99,102,241,.12);color:#818CF8;border-color:rgba(99,102,241,.25)}
+body.dark .brand{background:rgba(99,102,241,.12);color:#818CF8;border-color:rgba(99,102,241,.2)}
+body.dark .sb-reset-btn{border-color:#2A2D3E;color:var(--text2)}
+body.dark .sb-reset-btn:hover{border-color:var(--red);color:var(--red)}
+body.dark .over-high{background:rgba(239,68,68,.15);color:#F87171;border-color:rgba(239,68,68,.3)}
+body.dark .over-mid{background:rgba(245,158,11,.15);color:#FCD34D;border-color:rgba(245,158,11,.3)}
+body.dark .price-bar{background:#2A2D3E}
+
 html{scroll-behavior:smooth}
+
 body{font-family:var(--fn);background:var(--bg);color:var(--text);min-height:100vh;font-size:13.5px;line-height:1.5;display:flex}
 
 /* ── SIDEBAR ─────────────────────── */

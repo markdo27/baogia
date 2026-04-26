@@ -168,7 +168,17 @@ function updateDashboard() {
   document.getElementById('savedDisplay').textContent = fmtShort(savedTotal);
 }
 
-// --- Render ---
+// --- Theme ---
+function toggleTheme() {
+  var isDark = document.body.classList.toggle('dark');
+  localStorage.setItem('baogia_theme', isDark ? 'dark' : 'light');
+}
+// Apply saved theme on load
+(function() {
+  if (localStorage.getItem('baogia_theme') === 'dark') document.body.classList.add('dark');
+})();
+
+
 var filter = 'all', search = '', sortBy = 'default', statusFilter = 'all';
 
 function setFilter(f, el) {
