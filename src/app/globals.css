@@ -106,3 +106,9 @@
     -webkit-font-smoothing: antialiased;
   }
 }
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}

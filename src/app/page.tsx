@@ -9,6 +9,7 @@ export default function Home() {
   const router = useRouter();
   const [isUploading, setIsUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState<string>('');
+  const [progress, setProgress] = useState(0);
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
@@ -17,11 +18,23 @@ export default function Home() {
     setIsUploading(true);
     setUploadStatus('Đang tải file lên...');
 
+    setProgress(0);
+
+    // Start a simulated progress bar that creeps up to 95%
+    const progressInterval = setInterval(() => {
+      setProgress(prev => {
+        if (prev >= 95) return 95;
+        // Slow down as it gets higher
+        const increment = prev < 50 ? 5 : prev < 80 ? 2 : 0.5;
+        return prev + increment;
+      });
+    }, 1000);
+
     const formData = new FormData();
     formData.append('file', file);
 
     try {
-      setUploadStatus('Đang dùng AI trích xuất dữ liệu...');
+      setUploadStatus('Đang đọc tài liệu và phân tích bằng AI...');
       const response = await fetch('/api/extract', {
         method: 'POST',
         body: formData,
@@ -33,19 +46,25 @@ export default function Home() {
         throw new Error(result.error || 'Failed to extract data');
       }
 
+      clearInterval(progressInterval);
+      setProgress(100);
       setUploadStatus('Trích xuất thành công! Đang chuyển hướng...');
       
       // Store extracted data in sessionStorage for the next screen (Extraction Review UI)
       sessionStorage.setItem('pendingExtraction', JSON.stringify(result.data));
       
       // Navigate to review page (we will build this next)
-      router.push('/dashboard/review');
+      setTimeout(() => {
+        router.push('/dashboard/review');
+      }, 500);
 
     } catch (err: any) {
+      clearInterval(progressInterval);
       console.error(err);
       alert('Lỗi: ' + err.message);
       setIsUploading(false);
       setUploadStatus('');
+      setProgress(0);
     }
   }, [router]);
 
@@ -79,9 +98,23 @@ export default function Home() {
         <input {...getInputProps()} />
         
         {isUploading ? (
-          <div className="flex flex-col items-center justify-center py-4">
-            <Loader2 size={36} className="text-[var(--acc)] animate-spin mb-4" />
-            <p className="text-[var(--text)] font-medium">{uploadStatus}</p>
+          <div className="flex flex-col items-center justify-center py-6 w-full max-w-md mx-auto">
+            <Loader2 size={36} className="text-[var(--acc)] animate-spin mb-6" />
+            <p className="text-[var(--text)] font-medium mb-4">{uploadStatus}</p>
+            
+            <div className="w-full h-3 bg-[var(--surface2)] rounded-full overflow-hidden mb-2 relative">
+              <div 
+                className="h-full bg-[var(--acc)] rounded-full transition-all duration-500 ease-out relative overflow-hidden"
+                style={{ width: `${progress}%` }}
+              >
+                {/* Shimmer effect inside progress bar */}
+                <div className="absolute top-0 left-0 bottom-0 right-0 bg-white/20 -skew-x-12 animate-[shimmer_2s_infinite] w-full" style={{ transform: 'translateX(-100%)' }}></div>
+              </div>
+            </div>
+            <div className="flex justify-between w-full text-xs text-[var(--text3)] font-medium">
+              <span>Đang xử lý...</span>
+              <span>{Math.round(progress)}%</span>
+            </div>
           </div>
         ) : (
           <>
