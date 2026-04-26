@@ -1,0 +1,108 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #F8FAFC;
+  --color-surface: #FFFFFF;
+  --color-surface-2: #F1F5F9;
+  --color-border: #E2E8F0;
+  --color-border-subtle: #F1F5F9;
+  --color-text: #0F172A;
+  --color-text-2: #475569;
+  --color-text-3: #94A3B8;
+  --color-text-4: #CBD5E1;
+  
+  --color-acc: #6366F1;
+  --color-acc-light: rgba(99,102,241,.08);
+  --color-acc-ring: rgba(99,102,241,.15);
+  
+  --color-red: #EF4444;
+  --color-red-bg: rgba(239,68,68,.08);
+  --color-red-border: rgba(239,68,68,.2);
+  
+  --color-grn: #16A34A;
+  --color-grn-bg: rgba(22,163,74,.08);
+  --color-grn-border: rgba(22,163,74,.2);
+  
+  --color-ylw: #D97706;
+  --color-ylw-bg: rgba(217,119,6,.08);
+  --color-ylw-border: rgba(217,119,6,.2);
+  
+  --color-blue: #2563EB;
+  --color-blue-bg: rgba(37,99,235,.08);
+  --color-blue-border: rgba(37,99,235,.2);
+  
+  --color-purple: #7C3AED;
+  --color-purple-bg: rgba(124,58,237,.08);
+  --color-purple-border: rgba(124,58,237,.2);
+
+  --font-sans: 'Inter', sans-serif;
+}
+
+@layer base {
+  :root {
+    --bg: #F8FAFC;
+    --surface: #FFFFFF;
+    --surface2: #F1F5F9;
+    --border: #E2E8F0;
+    --border-subtle: #F1F5F9;
+    --text: #0F172A;
+    --text2: #475569;
+    --text3: #94A3B8;
+    --text4: #CBD5E1;
+    --acc: #6366F1;
+    --acc-light: rgba(99, 102, 241, .08);
+    --acc-ring: rgba(99, 102, 241, .15);
+    --red: #EF4444;
+    --red-bg: rgba(239, 68, 68, .08);
+    --red-border: rgba(239, 68, 68, .2);
+    --grn: #16A34A;
+    --grn-bg: rgba(22, 163, 74, .08);
+    --grn-border: rgba(22, 163, 74, .2);
+    --ylw: #D97706;
+    --ylw-bg: rgba(217, 119, 6, .08);
+    --ylw-border: rgba(217, 119, 6, .2);
+    --blue: #2563EB;
+    --blue-bg: rgba(37, 99, 235, .08);
+    --blue-border: rgba(37, 99, 235, .2);
+    --purple: #7C3AED;
+    --purple-bg: rgba(124, 58, 237, .08);
+    --purple-border: rgba(124, 58, 237, .2);
+  }
+
+  .dark {
+    --bg: #0C0E1A;
+    --surface: #141728;
+    --surface2: #1C2038;
+    --border: #252A42;
+    --border-subtle: #1C2038;
+    --text: #F1F5F9;
+    --text2: #94A3B8;
+    --text3: #64748B;
+    --text4: #374151;
+    --acc: #818CF8;
+    --acc-light: rgba(99, 102, 241, .12);
+    --acc-ring: rgba(129, 140, 248, .2);
+    --red: #F87171;
+    --red-bg: rgba(248, 113, 113, .08);
+    --red-border: rgba(248, 113, 113, .18);
+    --grn: #4ADE80;
+    --grn-bg: rgba(74, 222, 128, .07);
+    --grn-border: rgba(74, 222, 128, .18);
+    --ylw: #FCD34D;
+    --ylw-bg: rgba(252, 211, 77, .07);
+    --ylw-border: rgba(252, 211, 77, .18);
+    --blue: #60A5FA;
+    --blue-bg: rgba(96, 165, 250, .08);
+    --blue-border: rgba(96, 165, 250, .18);
+    --purple: #A78BFA;
+    --purple-bg: rgba(167, 139, 250, .08);
+    --purple-border: rgba(167, 139, 250, .18);
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+}

@@ -1,0 +1,55 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Project {
+  id        String      @id @default(uuid())
+  name      String
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  quotations Quotation[]
+}
+
+model Quotation {
+  id        String     @id @default(uuid())
+  name      String     // e.g. "Báo giá nhà thầu A"
+  projectId String
+  project   Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  items     LineItem[]
+}
+
+model LineItem {
+  id           String    @id @default(uuid())
+  quotationId  String
+  quotation    Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  
+  category     String    // e.g. "I. Điện - Nước"
+  itemNo       Int       // original order
+  name         String
+  unit         String    // dvt
+  quantity     Float     // sl
+  unitPrice    Float     // dg
+  totalPrice   Float     // tt
+  
+  brand        String?
+  note         String?
+  
+  // Evaluation (AI or manual)
+  evaluation   String?   // 'high', 'mid', 'ok'
+  marketPrice  Float?    // The AI-found market price
+  marketUrl    String?   // Proof URL
+  
+  // Status (pending, negotiating, agreed)
+  status       String    @default("pending")
+  agreedPrice  Float?    // The user-negotiated price
+  
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
