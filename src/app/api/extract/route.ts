@@ -47,8 +47,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Unsupported file format. Please upload PDF, XLSX, or CSV.' }, { status: 400 });
     }
 
-    // If file is too large, we might need chunking, but for now we send up to ~20k chars
-    const promptText = extractedText.substring(0, 30000); 
+    // If file is too large, we might need chunking, but for now we send up to ~15k chars 
+    // (This prevents the KRouter API from triggering its 128k 'mini' fallback which causes the 400 error)
+    const promptText = extractedText.substring(0, 15000); 
 
     // 2. Use LLM to structure the text into our schema
     console.log(`Starting AI extraction on ${promptText.length} characters...`);
