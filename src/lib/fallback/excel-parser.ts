@@ -63,11 +63,11 @@ export function parseExcel(buffer: Buffer): ExtractionResult {
   let headerRowIdx = -1;
   let roleMap = new Map<number, ColumnRole>();
 
-  for (let i = 0; i < Math.min(20, rows.length); i++) {
+  for (let i = 0; i < Math.min(50, rows.length); i++) {
     const row = rows[i].map(c => String(c ?? ''));
     const candidateMap = mapColumns(row);
     const score = extractionConfidence(candidateMap);
-    if (score >= 60) { // At least name + price columns found
+    if (score >= 30) { // Lowered from 60 — accept partial header matches
       headerRowIdx = i;
       roleMap = candidateMap;
       break;

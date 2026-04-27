@@ -91,10 +91,10 @@ export async function parsePDF(buffer: Buffer): Promise<ExtractionResult> {
   let headerRowIdx = -1;
   let roleMap = new Map<number, any>();
 
-  for (let i = 0; i < Math.min(30, grid.length); i++) {
+  for (let i = 0; i < Math.min(50, grid.length); i++) {
     const candidate = mapColumns(grid[i]);
     const score = extractionConfidence(candidate);
-    if (score >= 55) {
+    if (score >= 30) {  // Lowered from 55 — accept any row that has at least a name or price
       headerRowIdx = i;
       roleMap = candidate;
       break;
@@ -133,7 +133,12 @@ export async function parsePDF(buffer: Buffer): Promise<ExtractionResult> {
     const total     = totalIdx     !== undefined ? parseFloat(row[totalIdx]?.replace(/[,\s]/g, '') || '0') : 0;
     const qty       = quantityIdx  !== undefined ? parseFloat(row[quantityIdx]?.replace(/[,\s]/g, '') || '1') : 1;
 
-    if (!name || name.length < 2 || (unitPrice === 0 && total === 0)) {
+    if (!name || name.length < 2) {
+      rowsSkipped++;
+      continue;
+    }
+    // If we have no price data at all, skip — but allow rows with only one of unitPrice/total
+    if (unitPrice === 0 && total === 0) {
       rowsSkipped++;
       continue;
     }

@@ -95,7 +95,9 @@ export async function POST(req: Request) {
         : parseExcel(buffer);
 
       if (result.items.length === 0) {
-        throw new Error('Deterministic parser could not extract any items from this file.');
+        throw new Error(
+          'Không thể tự động đọc file này. File có thể bị quét dạng ảnh (scan), được mã hoá, hoặc có cấu trúc không chuẩn. Vui lòng thử chế độ AI hoặc kiểm tra lại file.'
+        );
       }
       return result.items;
     };
