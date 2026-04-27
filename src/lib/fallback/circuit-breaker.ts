@@ -37,7 +37,7 @@ export type PipelineMode = 'auto' | 'ai' | 'fallback';
 
 /**
  * Attempt AI pipeline; if it fails or times out, execute fallback silently.
- * forceMode: 'auto' = normal circuit breaker | 'ai' = AI only, no fallback | 'fallback' = skip AI entirely
+ * forceMode: 'auto' = normal circuit breaker | 'ai' = prefer AI but fall back with warning | 'fallback' = skip AI entirely
  */
 export async function withCircuitBreaker<T>(
   context: keyof typeof AI_TIMEOUT_MS,
@@ -58,13 +58,22 @@ export async function withCircuitBreaker<T>(
     return { data, pipeline: 'ai', durationMs: Date.now() - start };
   } catch (err: any) {
     const reason = err?.message ?? 'Unknown AI failure';
-    console.warn(`[CircuitBreaker:${context}] AI failed → ${forceMode === 'ai' ? 'ERROR (AI-only mode)' : 'fallback'}. Reason: ${reason}`);
+    console.warn(`[CircuitBreaker:${context}] AI failed → fallback. Reason: ${reason}`);
 
-    // AI-only mode: do not fall back, propagate the error
-    if (forceMode === 'ai') throw new Error(`AI unavailable: ${reason}`);
-
-    const data = await fallbackTask();
-    return { data, pipeline: 'fallback', durationMs: Date.now() - start, fallbackReason: reason };
+    // Even in AI-only mode: fall back gracefully instead of blocking the user.
+    // The UI can detect the 'ai-timeout-fallback' reason to show a warning badge.
+    try {
+      const data = await fallbackTask();
+      return {
+        data,
+        pipeline: 'fallback',
+        durationMs: Date.now() - start,
+        fallbackReason: forceMode === 'ai' ? `AI timeout — dùng dữ liệu offline: ${reason}` : reason,
+      };
+    } catch (fallbackErr: any) {
+      // Both AI and fallback failed — now we truly have no data
+      throw new Error(`Không thể tra giá: AI timeout và fallback cũng thất bại. ${fallbackErr?.message ?? ''}`);
+    }
   }
 }
 
