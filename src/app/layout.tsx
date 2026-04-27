@@ -33,7 +33,9 @@ export default function RootLayout({
           <Sidebar />
         </Suspense>
         <main className="ml-[232px] flex-1 flex flex-col min-h-screen px-7 pb-12 transition-all duration-200">
-          <Topbar />
+          <Suspense fallback={<div className="h-[60px] border-b border-[var(--border)] mb-5" />}>
+            <Topbar />
+          </Suspense>
           {children}
         </main>
       </body>
