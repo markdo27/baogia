@@ -5,11 +5,10 @@ const prisma = new PrismaClient();
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const resolvedParams = await params;
-    const { id } = resolvedParams;
+    const { id } = await context.params;
 
     if (!id) {
       return NextResponse.json({ error: 'Missing project ID' }, { status: 400 });
