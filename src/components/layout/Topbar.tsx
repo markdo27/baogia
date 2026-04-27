@@ -1,10 +1,42 @@
 'use client';
 
-import { Search, ChevronRight, Moon, Sun } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { Search, Moon, Sun } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 
 export default function Topbar() {
   const [isDark, setIsDark] = useState(false);
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
+
+  // Sync state if URL changes externally
+  useEffect(() => {
+    setSearchTerm(searchParams.get('search') || '');
+  }, [searchParams]);
+
+  // Debounce search update
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const current = new URLSearchParams(Array.from(searchParams.entries()));
+      if (searchTerm) {
+        current.set('search', searchTerm);
+      } else {
+        current.delete('search');
+      }
+      
+      const newQuery = current.toString();
+      const newUrl = newQuery ? `${pathname}?${newQuery}` : pathname;
+      
+      // Prevent pushing if it's identical
+      if (`${pathname}?${searchParams.toString()}` !== newUrl && pathname + '?' !== newUrl + '?') {
+        router.push(newUrl);
+      }
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm, pathname, searchParams, router]);
 
   useEffect(() => {
     // Check initial theme from document class
@@ -35,6 +67,8 @@ export default function Topbar() {
           <input 
             type="text" 
             placeholder="Tìm hạng mục, thương hiệu..." 
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
             className="border-none outline-none bg-transparent font-sans text-[13px] text-[var(--text)] w-[210px] placeholder:text-[var(--text3)]"
           />
         </div>

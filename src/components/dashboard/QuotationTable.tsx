@@ -8,6 +8,7 @@ import { usePipelineMode } from '@/components/layout/PipelineToggle';
 export default function QuotationTable({ initialItems }: { initialItems: any[] }) {
   const [items, setItems] = useState(initialItems);
   const [loadingItems, setLoadingItems] = useState<Record<string, boolean>>({});
+  const [errorItems, setErrorItems] = useState<Record<string, string>>({});
   const searchParams = useSearchParams();
   const categoryFilter = searchParams.get('category');
   const [pipelineMode] = usePipelineMode();
@@ -15,6 +16,7 @@ export default function QuotationTable({ initialItems }: { initialItems: any[] }
   const fetchMarketPrice = async (item: any) => {
     setLoadingItems(prev => ({ ...prev, [item.id]: true }));
     try {
+      setErrorItems(prev => { const n = {...prev}; delete n[item.id]; return n; });
       const res = await fetch('/api/market-price', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -29,9 +31,15 @@ export default function QuotationTable({ initialItems }: { initialItems: any[] }
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setItems(prev => prev.map(i => i.id === item.id ? data.item : i));
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert("Lỗi khi tìm giá: " + err);
+      const msg = err.message || String(err);
+      // Determine if it's a timeout
+      if (msg.includes('Timeout')) {
+        setErrorItems(prev => ({ ...prev, [item.id]: 'AI quá tải (Timeout)' }));
+      } else {
+        setErrorItems(prev => ({ ...prev, [item.id]: 'Lỗi tra giá' }));
+      }
     } finally {
       setLoadingItems(prev => ({ ...prev, [item.id]: false }));
     }
@@ -39,9 +47,15 @@ export default function QuotationTable({ initialItems }: { initialItems: any[] }
 
   const formatMoney = (val: number) => new Intl.NumberFormat('vi-VN').format(val);
 
-  const displayedItems = categoryFilter 
-    ? items.filter(item => item.category && item.category.includes(categoryFilter))
-    : items;
+  const search = searchParams.get('search')?.toLowerCase() || '';
+  
+  const displayedItems = items.filter(item => {
+    const matchCategory = categoryFilter ? item.category && item.category.includes(categoryFilter) : true;
+    const matchSearch = search 
+      ? item.name.toLowerCase().includes(search) || (item.brand && item.brand.toLowerCase().includes(search))
+      : true;
+    return matchCategory && matchSearch;
+  });
 
   // Button label by pipeline mode
   const btnLabel =
@@ -117,12 +131,19 @@ export default function QuotationTable({ initialItems }: { initialItems: any[] }
                         <PipelineBadge source={item.priceSource} />
                       </div>
                     ) : (
-                      <button 
-                        onClick={() => fetchMarketPrice(item)}
-                        className="opacity-0 group-hover:opacity-100 transition-opacity inline-flex items-center gap-1.5 px-3 py-1.5 bg-[var(--surface)] border border-[var(--border)] rounded text-[11px] font-medium text-[var(--text2)] hover:border-[var(--acc)] hover:text-[var(--acc)] shadow-sm"
-                      >
-                        <Search size={12} /> {btnLabel}
-                      </button>
+                      <div className="flex flex-col items-end gap-1.5">
+                        <button 
+                          onClick={() => fetchMarketPrice(item)}
+                          className="opacity-0 group-hover:opacity-100 transition-opacity inline-flex items-center gap-1.5 px-3 py-1.5 bg-[var(--surface)] border border-[var(--border)] rounded text-[11px] font-medium text-[var(--text2)] hover:border-[var(--acc)] hover:text-[var(--acc)] shadow-sm"
+                        >
+                          <Search size={12} /> {btnLabel}
+                        </button>
+                        {errorItems[item.id] && (
+                          <span className="text-[10px] font-medium text-[var(--red)] bg-[var(--red-bg)] px-1.5 py-0.5 rounded border border-[var(--red-border)]">
+                            {errorItems[item.id]}
+                          </span>
+                        )}
+                      </div>
                     )}
                   </td>
                   

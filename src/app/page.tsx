@@ -55,6 +55,7 @@ export default function Home() {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState('');
   const [progress, setProgress] = useState(0);
+  const [uploadError, setUploadError] = useState('');
   const progressRef = useRef(0);
   const [pipelineMode] = usePipelineMode();
 
@@ -64,6 +65,7 @@ export default function Home() {
 
     setIsUploading(true);
     setProgress(0);
+    setUploadError('');
     progressRef.current = 0;
     setUploadStatus(SEGMENTS[0].label);
 
@@ -96,7 +98,7 @@ export default function Home() {
       setTimeout(() => router.push('/dashboard/review'), 600);
     } catch (err: any) {
       clearInterval(progressInterval);
-      alert('Lỗi: ' + err.message);
+      setUploadError(err.message || 'Có lỗi xảy ra khi xử lý file.');
       setIsUploading(false);
       setUploadStatus('');
       setProgress(0);
@@ -196,6 +198,12 @@ export default function Home() {
                : pipelineMode === 'fallback' ? 'Sẽ dùng trích xuất truyền thống (Offline)'
                : 'AI với dự phòng tự động'}
             </div>
+            
+            {uploadError && (
+              <div className="mt-4 px-4 py-2 bg-[var(--red-bg)] text-[var(--red)] border border-[var(--red-border)] rounded-md text-[13px] font-medium text-center max-w-[80%]">
+                Lỗi: {uploadError}
+              </div>
+            )}
           </div>
         )}
       </div>
