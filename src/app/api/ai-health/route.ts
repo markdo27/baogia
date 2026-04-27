@@ -1,17 +1,18 @@
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-  baseURL: process.env.OPENAI_BASE_URL,
-});
-
 const MODEL = process.env.OPENAI_MODEL || 'gpt-4o';
 
 // Keep this fast — it's polled every 30s from the UI
 export const maxDuration = 10;
 
 export async function GET() {
+  // Instantiate inside the handler so the SDK never runs at build/module-eval time
+  const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+    baseURL: process.env.OPENAI_BASE_URL,
+  });
+
   const start = Date.now();
   try {
     // Minimal ping: 1-token completion to verify connectivity + key validity
