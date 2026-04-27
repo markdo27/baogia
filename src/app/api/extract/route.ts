@@ -6,10 +6,6 @@ import { withCircuitBreaker, validateAIExtractionOutput, type PipelineMode } fro
 import { parseExcel } from '@/lib/fallback/excel-parser';
 import { parsePDF } from '@/lib/fallback/pdf-parser';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-  baseURL: process.env.OPENAI_BASE_URL,
-});
 
 const MODEL = process.env.OPENAI_MODEL || 'gpt-4o';
 export const maxDuration = 300;
@@ -52,6 +48,12 @@ async function extractRawText(buffer: Buffer, filename: string): Promise<string>
 }
 
 export async function POST(req: Request) {
+  // Instantiate inside the handler so the SDK never runs at build/module-eval time
+  const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+    baseURL: process.env.OPENAI_BASE_URL,
+  });
+
   try {
     const formData = await req.formData();
     const file = formData.get('file') as File;
