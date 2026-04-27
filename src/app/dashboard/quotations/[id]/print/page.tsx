@@ -2,6 +2,8 @@ import { PrismaClient } from '@prisma/client';
 import { notFound } from 'next/navigation';
 import PrintActions from './PrintActions';
 
+export const dynamic = 'force-dynamic';
+
 const prisma = new PrismaClient();
 
 export default async function PrintPage({ params }: { params: { id: string } }) {
