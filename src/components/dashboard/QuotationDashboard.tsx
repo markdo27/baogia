@@ -38,6 +38,7 @@ export default function QuotationDashboard({ quotation }: { quotation: any }) {
   const [expandedHistoryId, setExpandedHistoryId] = useState<string | null>(null);
   const [contributeToast, setContributeToast] = useState<{ itemId: string; itemName: string } | null>(null);
   const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
+  const [priceErrors, setPriceErrors] = useState<Record<string, string>>({});
   const [pipelineMode] = usePipelineMode();
 
   const searchParams = useSearchParams();
@@ -121,6 +122,7 @@ export default function QuotationDashboard({ quotation }: { quotation: any }) {
 
   const fetchMarketPrice = async (item: any) => {
     setLoadingItems(prev => ({ ...prev, [item.id]: true }));
+    setPriceErrors(prev => { const n = {...prev}; delete n[item.id]; return n; });
     try {
       const res = await fetch('/api/market-price', {
         method: 'POST',
@@ -136,8 +138,12 @@ export default function QuotationDashboard({ quotation }: { quotation: any }) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setItems(prev => prev.map(i => i.id === item.id ? data.item : i));
-    } catch (err) {
-      alert('Lỗi khi tìm giá: ' + err);
+    } catch (err: any) {
+      const msg: string = err?.message ?? String(err);
+      setPriceErrors(prev => ({
+        ...prev,
+        [item.id]: msg.includes('Timeout') ? 'AI quá tải — thử lại hoặc dùng Offline' : 'Lỗi tra giá',
+      }));
     } finally {
       setLoadingItems(prev => ({ ...prev, [item.id]: false }));
     }
@@ -416,17 +422,24 @@ export default function QuotationDashboard({ quotation }: { quotation: any }) {
                                 </div>
                               </div>
                             ) : (
-                              <button
-                                onClick={() => fetchMarketPrice(item)}
-                                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-[var(--acc-light)] border border-[var(--acc-ring)] text-[var(--acc)] text-[11.5px] font-semibold hover:bg-[var(--acc)] hover:text-white hover:border-[var(--acc)] transition-colors ml-auto"
-                              >
-                                {pipelineMode === 'ai'       ? <Bot size={11} />
-                                 : pipelineMode === 'fallback' ? <Database size={11} />
-                                 : <Search size={11} />}
-                                {pipelineMode === 'ai'       ? 'Tra giá AI ✦'
-                                 : pipelineMode === 'fallback' ? 'Tra giá Offline'
-                                 : 'Tra giá'}
-                              </button>
+                              <div className="flex flex-col items-end gap-1">
+                                <button
+                                  onClick={() => fetchMarketPrice(item)}
+                                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-[var(--acc-light)] border border-[var(--acc-ring)] text-[var(--acc)] text-[11.5px] font-semibold hover:bg-[var(--acc)] hover:text-white hover:border-[var(--acc)] transition-colors ml-auto"
+                                >
+                                  {pipelineMode === 'ai'       ? <Bot size={11} />
+                                   : pipelineMode === 'fallback' ? <Database size={11} />
+                                   : <Search size={11} />}
+                                  {pipelineMode === 'ai'       ? 'Tra giá AI ✦'
+                                   : pipelineMode === 'fallback' ? 'Tra giá Offline'
+                                   : 'Tra giá'}
+                                </button>
+                                {priceErrors[item.id] && (
+                                  <span className="text-[9.5px] font-medium text-[var(--red)] bg-[var(--red-bg)] px-1.5 py-0.5 rounded border border-[var(--red-border)] leading-snug text-right max-w-[120px]">
+                                    {priceErrors[item.id]}
+                                  </span>
+                                )}
+                              </div>
                             )}
                           </td>
 

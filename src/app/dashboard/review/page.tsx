@@ -21,6 +21,7 @@ export default function ReviewExtractionPage() {
   const [deletingIdx, setDeletingIdx] = useState<number | null>(null);
   const [hintVisible, setHintVisible] = useState(true);
   const [fallbackMeta, setFallbackMeta] = useState<{ warning?: string; pipeline?: string } | null>(null);
+  const [saveError, setSaveError] = useState('');
   const confirmTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const deleteTimer  = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -83,7 +84,7 @@ export default function ReviewExtractionPage() {
       sessionStorage.removeItem('pendingFilename');
       router.push(`/dashboard/quotations/${data.quotationId}`);
     } catch (err: any) {
-      alert('Lỗi khi lưu: ' + err.message);
+      setSaveError('Lỗi khi lưu: ' + err.message);
       setIsSaving(false);
     }
   };
@@ -142,6 +143,12 @@ export default function ReviewExtractionPage() {
           >
             {confirmingSave ? <><Check size={15} /> Xác nhận lưu</> : <><Save size={15} /> {isSaving ? 'Đang lưu...' : `Lưu ${items.length} hạng mục`}</>}
           </button>
+          {saveError && (
+            <div className="px-4 py-2 bg-[var(--red-bg)] border-b border-[var(--red-border)] text-[var(--red)] text-[12.5px] font-medium flex items-center justify-between shrink-0">
+              <span>{saveError}</span>
+              <button onClick={() => setSaveError('')} className="text-[var(--red)] opacity-60 hover:opacity-100 text-lg leading-none ml-3">×</button>
+            </div>
+          )}
         </div>
       </div>
 
