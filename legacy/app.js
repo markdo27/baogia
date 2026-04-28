@@ -1306,12 +1306,83 @@ var DATA=[
         brand: ""
       }
     ]
+  },
+  {
+    s: "V",
+    name: "Thiết Bị Điện Máy Mua Rời",
+    items: [
+      {
+        n: 1,
+        name: "Máy lạnh Comfee Inverter 1.5 HP CFS-13VGX",
+        dvt: "Bộ",
+        sl: 3,
+        dg: 7890000,
+        tt: 23670000,
+        ref: "5800000",
+        note: "Nên mua tại kho đại lý (Chỉ lấy máy trần không kèm vật tư)",
+        ev: "high",
+        brand: "Comfee"
+      },
+      {
+        n: 2,
+        name: "Máy lạnh Comfee Inverter 1 HP CFS-10VGX",
+        dvt: "Bộ",
+        sl: 1,
+        dg: 6890000,
+        tt: 6890000,
+        ref: "4800000",
+        note: "Ảnh bị che số lượng, tạm tính là 1",
+        ev: "high",
+        brand: "Comfee"
+      },
+      {
+        n: 3,
+        name: "Tủ lạnh Hitachi Inverter 569 lít R-WB640PGV1 GMG",
+        dvt: "Cái",
+        sl: 1,
+        dg: 28210000,
+        tt: 28210000,
+        ref: "23500000",
+        note: "Mua tại kho rẻ hơn siêu thị rất nhiều",
+        ev: "high",
+        brand: "Hitachi"
+      },
+      {
+        n: 4,
+        name: "Máy giặt Electrolux Inverter 13 kg EWF1343P5WC",
+        dvt: "Cái",
+        sl: 1,
+        dg: 15390000,
+        tt: 15390000,
+        ref: "12500000",
+        note: "Các đại lý cấp 1 đang bán mã này giá rất tốt",
+        ev: "high",
+        brand: "Electrolux"
+      },
+      {
+        n: 5,
+        name: "Máy sấy thông hơi Electrolux 9 kg EDV904H3WC",
+        dvt: "Cái",
+        sl: 1,
+        dg: 9070000,
+        tt: 9070000,
+        ref: "7800000",
+        note: "Có thể lấy combo cùng máy giặt tại kho để có giá rẻ hơn",
+        ev: "high",
+        brand: "Electrolux"
+      }
+    ]
   }
 ];
 
 // --- Parse References to min/max ---
 function parseRef(ref) {
   if (!ref || ref === '-') return { min: 0, max: 0 };
+  // Handle plain integer market prices (e.g. section V: "5800000")
+  if (/^\d+$/.test(ref.trim())) {
+    var v = parseInt(ref.trim(), 10);
+    return { min: v, max: v };
+  }
   let str = ref.toLowerCase().replace(/[\/\s]/g, '').replace(/m2/g, '').replace(/md/g, '').replace(/bộ/g, '');
   let parts = str.split('-');
   function p(s) {
