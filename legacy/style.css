@@ -141,8 +141,11 @@ body.dark .sec-head:hover{filter:brightness(1.05)}
 .sec-badge.II{background:var(--grn-bg);color:var(--grn);border:1px solid var(--grn-border)}
 .sec-badge.III{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}
 .sec-badge.IV{background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border)}
+.sec-badge.V{background:var(--ylw-bg);color:var(--ylw);border:1px solid var(--ylw-border)}
 .sec-title{flex:1;font-size:13px;font-weight:600;color:var(--text)}
 .sec-saving{font-size:11.5px;color:var(--grn);font-weight:600;background:var(--grn-bg);padding:2px 9px;border-radius:100px;border:1px solid var(--grn-border)}
+.sec-sum-tt{font-size:11.5px;color:var(--blue);font-weight:600;background:var(--blue-bg);padding:2px 9px;border-radius:100px;border:1px solid var(--blue-border)}
+.sec-sum-mkt{font-size:11.5px;color:var(--grn);font-weight:600;background:var(--grn-bg);padding:2px 9px;border-radius:100px;border:1px solid var(--grn-border)}
 .sec-cnt{font-size:11px;color:var(--text3);background:var(--border-subtle);padding:2px 8px;border-radius:100px;border:1px solid var(--border)}
 .chevron{color:var(--text3);transition:transform .22s;flex-shrink:0}
 .chevron.closed{transform:rotate(180deg)}

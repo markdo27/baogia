@@ -1643,7 +1643,9 @@ function render() {
     }); // end items.forEach
 
     var secSaving = items.reduce(function(s,it){ return s + it.saving; }, 0);
-    var secHigh  = items.filter(function(it){ return it.overPct > 20; }).length;
+    var secHigh   = items.filter(function(it){ return it.overPct > 20; }).length;
+    var secTotal  = items.reduce(function(s,it){ return s + it.tt; }, 0);
+    var secMarket = items.reduce(function(s,it){ return it.mmax > 0 ? s + it.mmax * it.sl : s; }, 0);
 
     html += '<div class="section" data-s="' + sec.s + '">'
       + '<div class="sec-head" onclick="toggle(this)">'
@@ -1651,6 +1653,8 @@ function render() {
       + '<span class="sec-title">' + sec.name + '</span>'
       + (secHigh > 0 ? '<span class="sec-tag high-tag">' + secHigh + ' giá cao</span>' : '')
       + (secSaving > 0 ? '<span class="sec-saving">💰 ' + fmtShort(secSaving) + '</span>' : '')
+      + '<span class="sec-sum-tt" title="Tổng thành tiền báo giá">📋 ' + fmtShort(secTotal) + '</span>'
+      + (secMarket > 0 ? '<span class="sec-sum-mkt" title="Tổng giá thị trường">🏷️ ' + fmtShort(secMarket) + '</span>' : '')
       + '<span class="sec-cnt">' + items.length + ' mục</span>'
       + '<svg class="chevron open" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m18 15-6-6-6 6"/></svg>'
       + '</div>'
