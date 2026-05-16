@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Quotation Checker</title>
+  <meta name="description" content="Bảng báo giá thi công chi tiết – so sánh giá thầu với giá thị trường"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300..700;1,14..32,300..700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<!-- ── SIDEBAR & OVERLAY ──────────────────────────── -->
+<div id="sb-overlay" class="sb-overlay" onclick="toggleSidebar()"></div>
+<aside class="sidebar" id="sidebar">
+
+  <div class="sb-logo">
+    <div class="sb-logo-icon">
+      <svg width="18" height="18" viewBox="0 0 22 22" fill="none"><path d="M3 18L11 4l8 14H3z" fill="#fff" opacity=".9"/><path d="M7 18l4-8 4 8H7z" fill="#fff" opacity=".45"/></svg>
+    </div>
+    <span class="sb-logo-name">Quotation<strong>Checker</strong></span>
+    <button class="sb-collapse" id="sidebarToggle" onclick="toggleSidebar()" title="Thu gọn sidebar">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+    </button>
+  </div>
+
+  <!-- Phân mục -->
+  <div class="sb-group">
+    <div class="sb-section-label">Phân mục</div>
+    <nav class="sb-nav">
+      <a class="sb-item active" data-f="all" onclick="setFilter('all',this)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        <span>Tổng quan</span>
+        <span class="sb-badge" id="sb-all">—</span>
+      </a>
+      <a class="sb-item" data-f="I" onclick="setFilter('I',this)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+        <span>I. Điện - Nước</span>
+        <span class="sb-badge">25</span>
+      </a>
+      <a class="sb-item" data-f="II" onclick="setFilter('II',this)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 9 12 2 21 9 21 20 3 20"/></svg>
+        <span>II. Xây dựng</span>
+        <span class="sb-badge">14</span>
+      </a>
+      <a class="sb-item" data-f="III" onclick="setFilter('III',this)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/></svg>
+        <span>III. Lắp đặt Cửa</span>
+        <span class="sb-badge">11</span>
+      </a>
+      <a class="sb-item" data-f="IV" onclick="setFilter('IV',this)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 9V7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v2"/><path d="M2 11h20v11H2z"/></svg>
+        <span>IV. Nội thất</span>
+        <span class="sb-badge">12</span>
+      </a>
+      <a class="sb-item" data-f="V" onclick="setFilter('V',this)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/></svg>
+        <span>V. Điện Máy Mua Rời</span>
+        <span class="sb-badge">7</span>
+      </a>
+      <a class="sb-item" data-f="VI" onclick="setFilter('VI',this)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2v6h6V2zM6 16v6h6v-6zM16 2v6h6V2zM16 16v6h6v-6z"/></svg>
+        <span>VI. Thiết bị Bếp & VS</span>
+        <span class="sb-badge">8</span>
+      </a>
+      <a class="sb-item" id="nav-tab-csv" data-f="CSV" onclick="setFilter('CSV',this)" style="display:none;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        <span>Dữ Liệu Import</span>
+        <span class="sb-badge" id="sb-csv">0</span>
+      </a>
+    </nav>
+  </div>
+
+  <div class="sb-sep"></div>
+
+  <!-- Trạng thái -->
+  <div class="sb-group">
+    <div class="sb-section-label">Trạng thái đàm phán</div>
+    <nav class="sb-nav">
+      <a class="sb-item" data-status="pending" onclick="setStatus('pending',this)">
+        <span class="dot dot-pending"></span>
+        <span>Chưa chốt</span>
+        <span class="sb-badge" id="sb-pending">—</span>
+      </a>
+      <a class="sb-item" data-status="negotiating" onclick="setStatus('negotiating',this)">
+        <span class="dot dot-negotiating"></span>
+        <span>Đang đàm phán</span>
+        <span class="sb-badge" id="sb-negotiating">—</span>
+      </a>
+      <a class="sb-item" data-status="agreed" onclick="setStatus('agreed',this)">
+        <span class="dot dot-agreed"></span>
+        <span>Đã đồng ý</span>
+        <span class="sb-badge" id="sb-agreed">—</span>
+      </a>
+    </nav>
+  </div>
+
+  <div class="sb-footer">
+    <button class="sb-reset-btn" onclick="resetAll()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
+      <span>Reset tất cả</span>
+    </button>
+  </div>
+
+</aside>
+
+<!-- ── MAIN ──────────────────────────── -->
+<div class="main-wrapper">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <button class="mobile-menu-btn" onclick="toggleSidebar()" aria-label="Menu">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <span class="breadcrumb">Trang chủ</span>
+      <svg class="bc-sep" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      <span class="breadcrumb active">Quotation Checker</span>
+    </div>
+    <div class="topbar-right">
+      <div class="topbar-search">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input id="search" type="text" placeholder="Tìm hạng mục, thương hiệu..."/>
+      </div>
+      <div class="topbar-sort">
+        <select id="sortBy">
+          <option value="default">Mặc định</option>
+          <option value="overprice">% Kê giá cao nhất</option>
+          <option value="savings">Tiết kiệm nhiều nhất</option>
+          <option value="total">Thành tiền cao nhất</option>
+        </select>
+      </div>
+      <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Chuyển chế độ tối/sáng">
+        <span class="theme-icon-sun">☀️</span>
+        <span class="theme-icon-moon">🌙</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Page header -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Bảng Báo Giá Chi Tiết</h1>
+      <p class="page-sub">So sánh đơn giá báo với giá thị trường · <span id="totalItems">—</span> hạng mục</p>
+    </div>
+    <div class="header-actions">
+      <div class="cloud-sync" title="Đồng bộ đám mây (Vercel KV)">
+        <input type="text" id="projectId" value="NHA-VANPHUC" placeholder="Mã dự án" />
+        <button class="action-btn btn-cloud" onclick="syncToCloud()">☁️ Lưu</button>
+        <button class="action-btn" onclick="loadFromCloud()">⬇️ Tải</button>
+      </div>
+      
+      <div class="backup-actions">
+        <button class="action-btn" onclick="exportJSON()" title="Tải Backup file (JSON)">📥 Backup</button>
+        <label class="action-btn" title="Khôi phục từ Backup">
+          📤 Khôi phục
+          <input type="file" id="importJsonFile" accept=".json" style="display:none" onchange="importJSON(event)" />
+        </label>
+        <label class="action-btn btn-ai" title="Phân tích báo giá bằng AI">
+          ✨ Phân tích Ảnh
+          <input type="file" id="aiImageFile" accept="image/*" style="display:none" onchange="analyzeImageWithAI(event)" />
+        </label>
+        <button class="action-btn btn-csv" onclick="openCsvModal()" title="Dán dữ liệu CSV">📝 Nhập CSV (Paste)</button>
+        <button class="action-btn" onclick="logout()" style="color:var(--red)" title="Đăng xuất khỏi hệ thống">🚪 Đăng xuất</button>
+      </div>
+
+      <button class="export-btn action-btn" onclick="window.print()" title="In báo cáo (PDF)">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        <span class="export-text">In PDF</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Overview Cards -->
+  <div class="overview-grid">
+    <div class="ov-card">
+      <div class="ov-top">
+        <span class="ov-label">Hạng mục giá cao</span>
+        <div class="ov-icon red"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m10.29 3.86-8.73 15.12A1 1 0 0 0 2.43 21h17.14a1 1 0 0 0 .87-1.5L11.71 3.86a1 1 0 0 0-1.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+      </div>
+      <div class="ov-val" id="highCount">—</div>
+      <div class="ov-sep"></div>
+      <div class="ov-trend down">Kê cao hơn thị trường &gt;20%</div>
+    </div>
+    <div class="ov-card">
+      <div class="ov-top">
+        <span class="ov-label">Tiết kiệm tiềm năng</span>
+        <div class="ov-icon green"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div>
+      </div>
+      <div class="ov-val" id="potentialSavings">—</div>
+      <div class="ov-sep"></div>
+      <div class="ov-trend up">Nếu đàm phán về giá thị trường</div>
+    </div>
+    <div class="ov-card">
+      <div class="ov-top">
+        <span class="ov-label">Đã chốt / Tổng</span>
+        <div class="ov-icon blue"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+      </div>
+      <div class="ov-val" id="agreedCount">— / —</div>
+      <div class="ov-sep"></div>
+      <div class="ov-trend" id="progressBar">Tiến độ đàm phán</div>
+    </div>
+    <div class="ov-card">
+      <div class="ov-top">
+        <span class="ov-label">Tổng trước đàm phán</span>
+        <div class="ov-icon blue"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
+      </div>
+      <div class="ov-val" id="originalTotal">—</div>
+      <div class="ov-sep"></div>
+      <div class="ov-trend">Tổng giá báo gốc chưa đàm phán</div>
+    </div>
+    <div class="ov-card">
+      <div class="ov-top">
+        <span class="ov-label">Tổng sau đàm phán</span>
+        <div class="ov-icon purple"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+      </div>
+      <div class="ov-val" id="customTotal">0đ</div>
+      <div class="ov-sep"></div>
+      <div class="ov-trend up" id="savedDisplay">Hiển khi tất cả đã chốt</div>
+    </div>
+
+  </div>
+
+  <!-- Content card with tabs + table -->
+  <div class="content-card">
+    <div class="content-tabs" id="tabs">
+      <button class="ctab active" data-f="all">Tất cả <span class="tab-count" id="tab-all-count">—</span></button>
+      <button class="ctab" data-f="status-agreed"><span class="status-dot dot-agreed-sm"></span>Đã đồng ý <span class="tab-count" id="tab-agreed-count">—</span></button>
+      <button class="ctab" data-f="status-negotiating"><span class="status-dot dot-negotiating-sm"></span>Đang đàm phán <span class="tab-count" id="tab-negotiating-count">—</span></button>
+      <button class="ctab" data-f="status-pending"><span class="status-dot dot-pending-sm"></span>Chưa chốt <span class="tab-count" id="tab-pending-count">—</span></button>
+    </div>
+
+    <div id="main"></div>
+    <div id="empty" class="empty hidden">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <p>Không tìm thấy kết quả phù hợp</p>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <span>Quotation Checker</span>
+    <span class="footer-dot">&middot;</span>
+    <span>Dữ liệu chỉ mang tính tham khảo</span>
+    <span class="footer-dot">&middot;</span>
+    <span>Lưu trên trình duyệt của bạn</span>
+  </footer>
+
+</div><!-- /main-wrapper -->
+
+<div id="ai-loading-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:9999;flex-direction:column;align-items:center;justify-content:center;color:#fff;">
+  <div class="spinner" style="width:40px;height:40px;border:4px solid rgba(255,255,255,0.3);border-radius:50%;border-top-color:#fff;animation:spin 1s ease-in-out infinite;margin-bottom:15px;"></div>
+  <h3 style="margin:0;font-family:var(--fn);">✨ AI đang phân tích hình ảnh...</h3>
+  <p style="opacity:0.7;font-family:var(--fn);font-size:13px;margin-top:5px;">Quá trình này có thể mất từ 5-15 giây</p>
+</div>
+<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+
+<!-- CSV Paste Modal -->
+<div id="csvModal" class="modal-overlay" style="display:none;">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 style="margin:0; font-family:var(--fn);">Nhập dữ liệu CSV</h3>
+      <button class="close-btn" onclick="closeCsvModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:14px; color:var(--sub-text); margin-bottom:10px;">Dán trực tiếp nội dung CSV (từ Excel hoặc AI) vào ô bên dưới:</p>
+      <div class="code-snippet-container">
+        <textarea id="csvTextArea" placeholder="STT,HẠNG MỤC CÔNG VIỆC / VẬT TƯ,ĐVT,SỐ LƯỢNG,ĐƠN GIÁ BÁO TRONG ẢNH (VNĐ),THÀNH TIỀN...&#10;1,Tủ lạnh Aqua Inverter 512 lít,Cái,1,28900000,28900000,..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="action-btn" onclick="closeCsvModal()">Hủy</button>
+      <button class="action-btn btn-csv" style="background:var(--grn); color:white;" onclick="processCsvText()">Xác nhận Nhập</button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Đăng Nhập - Quotation Checker</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: var(--bg);
+      margin: 0;
+    }
+    .login-card {
+      background: var(--surface);
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+      border: 1px solid var(--border);
+    }
+    .login-card h2 {
+      margin-top: 0;
+      color: var(--text);
+      font-family: var(--fn);
+    }
+    .login-card input {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0 20px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--surface2);
+      color: var(--text);
+      font-family: var(--fn);
+      box-sizing: border-box;
+      font-size: 16px;
+    }
+    .login-card button {
+      width: 100%;
+      padding: 12px;
+      background: var(--blue);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: var(--fn);
+    }
+    .login-card button:hover {
+      background: var(--blue-bg);
+      color: var(--blue);
+    }
+    .error-msg {
+      color: var(--red);
+      margin-bottom: 15px;
+      font-size: 14px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-card">
+    <h2>🔒 Quản Trị Hệ Thống</h2>
+    <p style="color: var(--sub-text); margin-bottom: 20px; font-size: 14px;">Vui lòng đăng nhập để truy cập dữ liệu</p>
+    <div id="errorMsg" class="error-msg">Sai mật khẩu!</div>
+    <form id="loginForm">
+      <input type="password" id="password" placeholder="Nhập mật khẩu quản trị..." required />
+      <button type="submit" id="loginBtn">Đăng Nhập</button>
+    </form>
+  </div>
+
+  <script>
+    async function checkAuth() {
+      const token = localStorage.getItem('auth_token');
+      if (!token) return;
+      
+      try {
+        const res = await fetch('/api/auth/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token })
+        });
+        const data = await res.json();
+        if (data.valid) {
+          window.location.href = 'index.html';
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    checkAuth();
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const pwd = document.getElementById('password').value;
+      const btn = document.getElementById('loginBtn');
+      const err = document.getElementById('errorMsg');
+      
+      btn.innerText = 'Đang kiểm tra...';
+      btn.disabled = true;
+      err.style.display = 'none';
+
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: pwd })
+        });
+        const data = await res.json();
+        
+        if (res.ok && data.token) {
+          localStorage.setItem('auth_token', data.token);
+          window.location.href = 'index.html';
+        } else {
+          err.innerText = data.error || 'Lỗi đăng nhập';
+          err.style.display = 'block';
+        }
+      } catch (error) {
+        err.innerText = 'Lỗi kết nối máy chủ';
+        err.style.display = 'block';
+      } finally {
+        btn.innerText = 'Đăng Nhập';
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

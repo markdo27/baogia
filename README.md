@@ -1,79 +1,86 @@
-# Price Audit
+# 🏗️ Báo Giá Pro - Construction & Appliance Cost Tracker
 
-**Price Audit** is an AI-powered SaaS platform designed to automate the extraction, auditing, and market-comparison of construction quotations. Built with a modern Next.js stack, it transforms dense, unstructured PDF and Excel files into clean, comparable data, saving hours of manual data entry.
+**Báo Giá Pro** là một ứng dụng Web chuyên dụng được thiết kế để giúp các chủ nhà (hoặc nhà thầu) dễ dàng quản lý, đối chiếu và đàm phán các hạng mục báo giá trong quá trình xây dựng, hoàn thiện nội thất và mua sắm điện máy.
 
-## 🚀 Features
-
-- **AI-Powered Extraction**: Upload PDF, XLSX, or CSV quotation files. The system utilizes OpenAI's advanced LLMs (via the KRouter proxy) to parse unstructured data into clean JSON schemas.
-- **Smart Data Grouping**: Automatically categorizes items based on quotation headers (e.g., Electrical, Plumbing, Interior).
-- **Market Price Intelligence**: Integrates with external search APIs to instantly find real-time market prices for comparison.
-- **Interactive Dashboard**: A sleek, high-performance UI inspired by legacy desktop applications but built for the web. Includes:
-  - Real-time subtotal calculators
-  - Inline editing for negotiated prices
-  - Visual savings indicators and "Overpriced" alerts
-- **Persistent Storage**: Data is saved to a PostgreSQL database via Prisma ORM for reliable tracking.
-
-## 🛠 Tech Stack
-
-- **Framework**: [Next.js 15 (App Router)](https://nextjs.org/)
-- **Database ORM**: [Prisma](https://www.prisma.io/)
-- **Database**: PostgreSQL (Neon / Vercel Postgres)
-- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
-- **Icons**: [Lucide React](https://lucide.dev/)
-- **File Parsing**: `pdf2json` & `xlsx`
-- **AI Integration**: OpenAI SDK
-
-## ⚙️ Local Development
-
-### Prerequisites
-- Node.js 18.x or higher
-- A PostgreSQL database (or you can switch the Prisma provider back to `sqlite` for local testing)
-- An AI API Key (OpenAI or compatible proxy like KRouter)
-
-### Setup
-
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/markdo27/baogia.git
-   cd baogia
-   ```
-
-2. **Install dependencies:**
-   ```bash
-   npm install
-   ```
-
-3. **Configure Environment Variables:**
-   Create a `.env` file in the root directory and add your credentials:
-   ```env
-   # Database
-   DATABASE_URL="postgresql://user:password@host:5432/db"
-
-   # AI Extraction API
-   OPENAI_API_KEY="your-api-key"
-   OPENAI_BASE_URL="https://api.your-provider.com/v1"
-   OPENAI_MODEL="gpt-4o"
-   ```
-
-4. **Initialize Database:**
-   ```bash
-   npx prisma db push
-   ```
-
-5. **Start the Development Server:**
-   ```bash
-   npm run dev
-   ```
-   Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-## ☁️ Deployment
-
-This application is optimized for deployment on **Vercel**.
-
-1. Import the project into Vercel.
-2. Under **Project Settings > General**, ensure the Framework Preset is set to **Next.js**.
-3. Add the environment variables (`DATABASE_URL`, `OPENAI_API_KEY`, etc.) in the Vercel dashboard.
-4. The included `postinstall` script (`prisma generate`) will ensure the database client builds correctly during deployment.
+Được sức mạnh của **Google Gemini 2.5 Flash** và **Google Search Grounding** hậu thuẫn, hệ thống không chỉ đọc được báo giá từ ảnh chụp mà còn tự động lên mạng săn lùng giá thị trường thấp nhất theo thời gian thực để giúp bạn tiết kiệm hàng chục triệu đồng!
 
 ---
-*Built for speed, accuracy, and maximum negotiation leverage.*
+
+## 🌟 Tính Năng Nổi Bật
+
+### 🤖 1. Trợ Lý AI Phân Tích Báo Giá (Gemini 2.5 Flash)
+- **Đọc Ảnh Thông Minh:** Bạn chỉ cần quăng một bức ảnh chụp báo giá hoặc hóa đơn của nhà thầu vào, AI sẽ tự động đọc, trích xuất chính xác Tên sản phẩm, Thương hiệu, Số lượng và Đơn giá.
+- **Săn Giá Thị Trường (Real-time Google Search):** Được tích hợp tính năng **Google Search Grounding**, AI sẽ tự động lướt web (Điện Máy Xanh, Shopee, Lazada...) để dò tìm mức giá bán lẻ rẻ nhất trên thị trường cho chính xác món đồ đó ở thời điểm hiện tại.
+- **Đánh giá đắt/rẻ:** AI tự động đưa ra nhận xét bằng Tiếng Việt (Ví dụ: "Giá báo cao hơn thị trường 1.5 triệu, nên đàm phán lại").
+
+### 📊 2. Dashboard Thống Kê Real-time
+- **Tính toán chênh lệch:** Tự động so sánh "Đơn giá nhà thầu" vs "Giá thị trường" để tính ra số tiền chênh lệch (tiết kiệm hoặc lỗ).
+- **Tổng tiền sau đàm phán:** Bảng theo dõi số tiền tổng cộng sẽ cập nhật **ngay lập tức (real-time)** mỗi khi bạn chốt "✅ Đã đồng ý" cho một món hàng.
+
+### 💾 3. Quản Lý Dữ Liệu Mạnh Mẽ
+- **Lưu trữ Cloud (Redis):** Dữ liệu được lưu trữ an toàn trên Upstash Redis thông qua Vercel Serverless Functions. Đăng nhập và xem dữ liệu trên mọi thiết bị.
+- **Nhập/Xuất Dữ Liệu linh hoạt:**
+  - Import bằng Code Snippet CSV nhanh chóng.
+  - Export toàn bộ Database ra file `.json` để sao lưu backup offline.
+- **Chức năng Xóa/Sửa:** Tùy chỉnh trạng thái từng món đồ (Đang đàm phán, Đã chốt, Chưa chốt) và có thể Xóa các món đồ dư thừa trực tiếp trên giao diện.
+
+### 🔒 4. Bảo Mật & Phân Quyền
+- Hệ thống sử dụng **Token-based Authentication**. Mọi thao tác lưu/tải dữ liệu và phân tích AI đều được kiểm tra phân quyền (Bearer Token), ngăn chặn hoàn toàn việc người ngoài truy cập trái phép.
+
+---
+
+## 🛠️ Công Nghệ Sử Dụng (Tech Stack)
+
+Hệ thống được thiết kế theo kiến trúc Tối Giản nhưng Tối Ưu Tốc Độ:
+- **Frontend:** Pure HTML5, Vanilla CSS3 (Custom Design System, Glassmorphism), Vanilla JavaScript. Không sử dụng Framework nặng nề.
+- **Backend:** Vercel Serverless Functions (`Node.js`).
+- **Database:** Upstash Redis (KV Store).
+- **AI Engine:** Google Gemini REST API (`gemini-2.5-flash`).
+- **Deploy:** Vercel.
+
+---
+
+## 🚀 Hướng Dẫn Cài Đặt Dành Cho Lập Trình Viên
+
+Nếu bạn muốn tự clone dự án này về và chạy trên máy chủ cá nhân, hãy làm theo các bước sau:
+
+### Bước 1: Clone Repository
+\`\`\`bash
+git clone https://github.com/markdo27/baogia_stable.git
+cd baogia_stable
+\`\`\`
+
+### Bước 2: Thiết Lập Biến Môi Trường (Environment Variables)
+Tạo một file `.env` (nếu chạy local) hoặc thiết lập trực tiếp trên Vercel Dashboard các biến sau:
+- \`ADMIN_PASSWORD\`: Mật khẩu dùng để truy cập vào hệ thống (Ví dụ: \`admin123\`).
+- \`REDIS_URL\`: Đường dẫn kết nối đến Upstash Redis của bạn.
+- \`GEMINI_API_KEY\`: API Key chính chủ từ **Google AI Studio** (để kích hoạt tính năng Đọc ảnh và Google Search).
+
+### Bước 3: Deploy Lên Vercel
+Dự án được cấu hình sẵn để tương thích 100% với Vercel. Bạn chỉ cần:
+1. Đăng nhập Vercel.
+2. Chọn "Add New Project" -> Import repository \`baogia_stable\`.
+3. Điền các biến môi trường (Environment Variables) ở Bước 2.
+4. Bấm **Deploy**.
+
+---
+
+## 📝 Cấu Trúc Thư Mục Chính
+
+- \`index.html\`: Giao diện chính của Dashboard đàm phán.
+- \`login.html\`: Cổng đăng nhập bảo mật của Admin.
+- \`style.css\`: Hệ thống Design System và responsive layout.
+- \`app.js\`: Chứa toàn bộ logic xử lý Frontend (Render bảng, tính toán Dashboard, giao tiếp API).
+- \`api/\`: Thư mục chứa các API Serverless Backend:
+  - \`api/auth/login.js\`: Xử lý đăng nhập và cấp phát Token.
+  - \`api/analyze-image.js\`: Kết nối với Gemini 2.5 Flash, xử lý ảnh Base64 và gọi Google Search Grounding.
+  - \`api/save.js\` / \`api/load.js\`: Xử lý lưu/tải dữ liệu từ Redis.
+
+---
+
+## 💡 Mẹo Sử Dụng (Pro Tips)
+- Chức năng khảo giá bằng tay luôn có sẵn các nút **Shopee, Lazada, Google** ở cuối mỗi dòng. Bấm vào là hệ thống tự động chèn từ khóa tìm kiếm cho bạn.
+- Nếu không thích dùng ảnh, bạn có thể chuyển báo giá của nhà thầu thành dạng file CSV (các cột cách nhau bởi dấu phẩy) và dán thẳng vào tab **Nhập File CSV** để đưa vào hệ thống trong 1 giây.
+
+---
+*Phát triển bởi đội ngũ Báo Giá Pro.*
